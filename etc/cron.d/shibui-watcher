@@ -1,0 +1,5 @@
+# min hour dayofmonth month dayofweek combmand
+# you should set HOME as you want
+# HOME=/home/tagomoris
+*     *    *          *     *         $HOME/shibui/bin/update_crontab.sh
+*/5   *    *          *     *         $HOME/shibui/bin/check_completed_jobs.sh

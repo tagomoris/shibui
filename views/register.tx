@@ -1,0 +1,70 @@
+: cascade base
+: around content -> {
+<h2>クエリ登録</h2>
+
+<script>
+var QUERY_EDITOR_SIZES = ["xx-small", "x-small", "small", "medium", "large", "x-large", "xx-large"];
+var QUERY_EDITOR_SIZE_POS = 3;
+function font_size_change(dif){
+  QUERY_EDITOR_SIZE_POS += dif;
+  if (QUERY_EDITOR_SIZE_POS < 0)
+    QUERY_EDITOR_SIZE_POS = 0;
+  if (QUERY_EDITOR_SIZE_POS > 6)
+    QUERY_EDITOR_SIZE_POS = 6;
+  return QUERY_EDITOR_SIZES[QUERY_EDITOR_SIZE_POS];
+}
+</script>
+
+<form class="xhrpost" method="POST" action="<: $c.req.uri_for('/register') :>">
+<fieldset class="control-group">
+
+<div class="control-group">
+<label class="control-label" style="font-size: large; font-weight: bold;">クエリ</label>
+<div class="controls" style="margin-top: -18px;">
+<div class="btn-group" style="margin-top: -10px; margin-bottom: 2px; margin-right: 5%; width: 130px; float: right;">
+<a class="btn" href="javascript: $('#query_editor').css('font-size', font_size_change(-1));"><i class="icon-minus"></i></a>
+<a class="btn" href="javascript: $('#query_editor').css('font-size', font_size_change(1));"><i class="icon-plus"></i></a>
+<a class="btn" id="editor_show_help" data-toggle="modal" data-target="#editor_help">HELP</a>
+</div>
+<textarea style="width: 95%; height: 450px;" class="editor" id="query_editor" name="query">
+</textarea>
+<p class="help-block">実行するクエリ本文(SELECT ... FROM .. WHERE ...)</p>
+</div>
+</div>
+
+<div class="control-group">
+<label class="control-label" style="font-size: large; font-weight: bold;">サービス名</label>
+<div class="controls">
+<input type="text" placeholder="サービス名" name="service" style="width: 50%; margin-left: 20px;" />
+<p class="help-block">クエリの __SERVICE__ に置き換えられます(入力必須)</p>
+</div>
+</div>
+
+<div class="form-actions">
+<button class="btn btn-large btn-primary" type="submit">クエリを登録</button>
+</div>
+
+</fieldset>
+</form>
+
+<div class="modal" id="editor_help" style="display: none;">
+<div class="modal-header">
+<a class="close" data-dismiss="modal">&times;</a>
+<h3>クエリ記述 Tips</h3>
+</div>
+<div class="modal-body">
+<p>使用可能なパラメータ</p>
+<dl>
+  <dt>__SERVICE__</dt><dd>サービス名</dd>
+  <dt>__TODAY__</dt><dd>クエリ実行時の日付 (YYYYMMDD)</dd>
+  <dt>__xDAYS_AGO__</dt><dd>クエリ実行時からx日前の日付(1-9) (YYYYMMDD)</dd>
+  <dt>__YESTERDAY__</dt><dd>クエリ実行時の前日の日付(__1DAYS_AGO__) (YYYYMMDD)</dd>
+  <dt>__MONTH__</dt><dd>クエリ実行時の月 (YYYYMM)</dd>
+  <dt>__LASTMONTH__</dt><dd>クエリ実行時の前月 (YYYYMM)</dd>
+</div>
+<div class="modal-footer">
+<a href="#" class="btn" data-dismiss="modal">Close</a>
+</div>
+</div>
+
+: }

@@ -1,0 +1,332 @@
+: cascade base
+: around content -> {
+<h2>クエリ詳細</h2>
+
+<script>
+var QUERY_EDITOR_SIZES = ["xx-small", "x-small", "small", "medium", "large", "x-large", "xx-large"];
+var QUERY_EDITOR_SIZE_POS = 3;
+function font_size_change(dif){
+  QUERY_EDITOR_SIZE_POS += dif;
+  if (QUERY_EDITOR_SIZE_POS < 0)
+    QUERY_EDITOR_SIZE_POS = 0;
+  if (QUERY_EDITOR_SIZE_POS > 6)
+    QUERY_EDITOR_SIZE_POS = 6;
+  return QUERY_EDITOR_SIZES[QUERY_EDITOR_SIZE_POS];
+}
+</script>
+
+<form class="xhrpost" method="POST" action="<: $c.req.uri_for('/update/query/'~$query.id) :>">
+<fieldset class="control-group">
+
+<div class="control-group">
+<label class="control-label" style="font-size: large; font-weight: bold;">クエリ</label>
+<div class="controls" style="margin-top: -18px;">
+<div class="btn-group" style="margin-top: -10px; margin-bottom: 2px; margin-right: 5%; width: 180px; float: right;">
+<a class="btn" href="javascript: var h = parseInt($('#query_editor').css('height')); $('#query_editor').css('height', h * 1.5);"><i class="icon-resize-vertical"></i></a>
+<a class="btn" href="javascript: $('#query_editor').css('font-size', font_size_change(-1));"><i class="icon-minus"></i></a>
+<a class="btn" href="javascript: $('#query_editor').css('font-size', font_size_change(1));"><i class="icon-plus"></i></a>
+<a class="btn" id="editor_show_help" data-toggle="modal" data-target="#editor_help">HELP</a>
+</div>
+<textarea style="width: 95%; height: 200px;" class="editor" id="query_editor" name="query"><: $query.query :></textarea>
+<p class="help-block">いちど <a href="<: $stash.urls.shib :>/" target="_blank">shib</a> で実行してみてから実行スケジュールを登録するのが良いでしょう</p>
+</div>
+</div>
+
+<div class="control-group">
+<label class="control-label" style="font-size: large; font-weight: bold;">クエリ説明</label>
+<div class="controls">
+<input type="text" placeholder="クエリ説明" name="description" style="width: 80%; margin-left: 20px;" value="<: $query.description :>" />
+<p class="help-block"></p>
+</div>
+</div>
+
+<div class="control-group">
+<label class="control-label" style="font-size: large; font-weight: bold;">日時フィールド位置</label>
+<div class="controls">
+<select name="date_field_num">
+<option <: $query.date_field_num == 0 ? 'selected' : '' :> value="0">先頭カラム</option>
+<option <: $query.date_field_num == 1 ? 'selected' : '' :> value="1">2番目カラム</option>
+<option <: $query.date_field_num == -1 ? 'selected' : '':> value="-1">実行日時を使用</option>
+</select>
+<p class="help-block">クエリ結果のうち日時を示すカラムを指定します。3番目以降は指定できません(クエリを書き換えてください)。</p>
+</div>
+</div>
+
+<div class="control-group">
+<label class="control-label" style="font-size: large; font-weight: bold;">日時形式</label>
+<div class="controls">
+<input type="text" placeholder="%Y%m%d や %Y%m%d%H など" name="date_format" style="width: 20em; margin-left: 20px;" value="<: $query.date_format :>" />
+<p class="help-block">通常 %Y%m%d (日付) もしくは %Y%m%d%H (日付+時間)のどちらかです</p>
+</div>
+</div>
+
+<div class="btn-group" data-toggle="buttons-radio">
+  <button class="btn btn-primary <: $query.status ? 'active' : '' :>" id="query_execute">スケジュール通り実行</button>
+  <button class="btn btn-danger <: $query.status ? '' : 'active' :>" id="query_stop">このクエリ実行をすべて停止</button>
+</div>
+<input id="silent_submit" type="hidden" value="0" name="silent" />
+<input id="status_checkbox" type="hidden" value="<: $query.status :>" name="status" />
+<script>
+$(function(){
+  $('#query_execute,#query_stop').click(function(event){
+    var state = ($(event.target).attr('id') === 'query_execute' ? 1 : 0);
+    $('input#status_checkbox').val(state);
+    $('#silent_submit').val('1');
+    $('#query_status_toggle').closest('form').submit();
+  });
+});
+</script>
+
+<div class="form-actions">
+  <button class="btn btn-primary" type="submit">変更を保存</button>
+  <button class="btn" type="reset">キャンセル</button>
+</div>
+
+</fieldset>
+</form>
+
+<div class="modal" id="editor_help" style="display: none;">
+  <div class="modal-header">
+    <a class="close" data-dismiss="modal">&times;</a>
+    <h3>クエリ記述 Tips</h3>
+  </div>
+  <div class="modal-body">
+    <p>使用可能なパラメータ</p>
+    <dl>
+      <dt>__SERVICE__</dt><dd>サービス名</dd>
+      <dt>__TODAY__</dt><dd>クエリ実行時の日付 (YYYYMMDD)</dd>
+      <dt>__xDAYS_AGO__</dt><dd>クエリ実行時からx日前の日付(1-9) (YYYYMMDD)</dd>
+      <dt>__YESTERDAY__</dt><dd>クエリ実行時の前日の日付(__1DAYS_AGO__) (YYYYMMDD)</dd>
+      <dt>__MONTH__</dt><dd>クエリ実行時の月 (YYYYMM)</dd>
+      <dt>__LASTMONTH__</dt><dd>クエリ実行時の前月 (YYYYMM)</dd>
+    </dl>
+  </div>
+  <div class="modal-footer">
+    <a href="#" class="btn" data-dismiss="modal">Close</a>
+  </div>
+</div>
+
+: if $can_run {
+
+<hr />
+<h3>グラフ投入設定 <a class="btn btn-small btn-info" href="#" id="show_add_graph_form"><i class="icon-plus-sign icon-white"></i> Add</a></h3>
+<script>
+$(function(){
+  $('#show_add_graph_form').click(function(){ $('#add_graph_form').slideToggle(); return false; });
+})
+</script>
+
+<form id="add_graph_form" class="well form-inline xhrpost" method="POST" action="<: $c.req.uri_for('/add/graph/'~$query.id) :>" style="display: none;">
+<fieldset class="control-group">
+
+<div class="control-group" style="display: inline;"><div class="controls" style="display: inline;">
+<input type="text" class="input-small" placeholder="データ名" name="label" />
+<p class="help-block" style="display: inline;"></p>
+</div></div>
+
+
+<div class="control-group" style="display: inline;"><div class="controls" style="display: inline;">
+  <select name="value_field_num" style="width: 15em;">
+    <option value="-1" disabled>データカラム(先頭0)</option>
+    <option <: $query.date_field_num == 0 ? 'disabled' : '' :>>0</option>
+    <option <: $query.date_field_num == 1 ? 'disabled' : '' :>>1</option>
+    <option>2</option><option>3</option><option>4</option><option>5</option>
+    <option>6</option><option>7</option><option>8</option><option>9</option>
+  </select>
+  <p class="help-block" style="display: inline;"></p>
+</div></div>
+
+<div class="control-group" style="display: inline;"><div class="controls" style="display: inline;">
+  HRForecast /
+  <input type="text" class="input-small" placeholder="サービス" name="hr_service" />
+  /
+  <input type="text" class="input-small" placeholder="セクション" name="hr_section" />
+  /
+  <input type="text" class="input-small" placeholder="グラフ名" name="hr_graphname" />
+  <p class="help-block" style="display: inline;"></p>
+</div></div>
+
+<button type="submit" class="btn">追加</button>
+</fieldset>
+</form>
+
+: if $graphs.size() > 0 {
+<table class="table">
+  <thead><tr><th>データ名</th><th>カラム番号</th><th>HRForecast URL</th><th></th></tr></thead>
+  <tbody>
+  : for $graphs -> $graph {
+  <tr>
+    <td><: $graph.label :></td>
+    <td><: $graph.value_field_num :></td>
+    : my $url = $stash.urls.hrforecast ~ "/view/" ~ $graph.hr_service ~ "/" ~ $graph.hr_section ~ "/" ~ $graph.hr_graphname
+    <td><a href="<: $url :>" target="_blank"><: $url :></a></td>
+    <td><button class="btn btn-small btn-danger xhr_confirm_button" data-confirm="本当にこのグラフ投入設定を削除しますか？" data-uri="<: $c.req.uri_for('/delete/graph/'~$graph.id) :>">削除</button></td>
+  </tr>
+  : }
+</table>
+: }
+
+<hr />
+<h3>実行スケジュール設定 <a class="btn btn-small btn-info" href="#" id="show_add_schedule_form"><i class="icon-plus-sign icon-white"></i> Add</a></h3>
+<script>
+$(function(){
+  $('#show_add_schedule_form').click(function(){ $('#add_schedule_form').slideToggle(); return false; });
+})
+</script>
+
+<form id="add_schedule_form" class="well form-vertical xhrpost" method="POST" action="<: $c.req.uri_for('/add/schedule/'~$query.id) :>" style="display: none;">
+<fieldset class="control-group">
+
+<input type="hidden" id="schedule_type" name="schedule_type" value="monthly" />
+<div class="btn-group" data-toggle="buttons-radio">
+  <button class="btn" type="button" id="schedule_type_monthly">毎月</button>
+  <button class="btn" type="button" id="schedule_type_weekly">毎週</button>
+  <button class="btn" type="button" id="schedule_type_daily">毎日</button>
+</div>
+<script>
+$(function(){
+  var switch_form = function(schedule_type) {
+    if (schedule_type === 'daily') { $('#schedule_items_monthly,#schedule_items_weekly').hide(); $('#schedule_items_daily').show(); }
+    else if (schedule_type === 'weekly') { $('#schedule_items_monthly,#schedule_items_daily').hide(); $('#schedule_items_weekly').show(); }
+    else { $('#schedule_items_monthly').show(); $('#schedule_items_weekly,#schedule_items_daily').hide(); }
+  };
+
+  var schedule_type = $('#schedule_type').val();
+  if (schedule_type === 'daily') { $('#schedule_type_daily').addClass('active'); switch_form('daily'); }
+  else if (schedule_type === 'weekly') { $('#schedule_type_weekly').addClass('active'); switch_form('weekly'); }
+  else { $('#schedule_type_monthly').addClass('active'); switch_form('monthly'); }
+
+  $('#schedule_type_monthly').click(function(){ $('#schedule_type').val('monthly'); switch_form('monthly'); });
+  $('#schedule_type_weekly').click(function(){ $('#schedule_type').val('weekly'); switch_form('weekly'); });
+  $('#schedule_type_daily').click(function(){ $('#schedule_type').val('daily'); switch_form('daily'); });
+});
+</script>
+
+<div id="schedule_items_monthly" style="margin-top: 1em;">
+  <div class="control-group">
+    <div class="controls">
+      毎月 <input type="text" class="input-small" name="dayofmonth" /> 日に実行
+      <p class="help-block">1から28までの数値で指定してください</p>
+    </div>
+  </div>
+</div> <!-- schedule_items_monthly -->
+
+<div id="schedule_items_weekly" style="margin-top: 1em;">
+  <div class="control-group">
+    <div class="controls">
+      毎週
+      <select name="dayofweek">
+        <option value="xxx" disabled>未指定</option>
+        <option value="Sun">日</option><option value="Mon">月</option><option value="Tue">火</option><option value="Wed">水</option>
+        <option value="Thu">木</option><option value="Fri">金</option><option value="Sat">土</option>
+      </select>
+      曜日に実行
+      <p class="help-block"></p>
+    </div>
+  </div>
+</div> <!-- schedule_items_weekly -->
+
+<div id="schedule_items_daily" style="margin-top: 1em;">
+  毎日実行
+</div> <!-- schedule_items_daily -->
+
+<div class="control-group">
+  <div class="controls">
+    <input type="text" class="input-small" name="hour" /> 時 <input type="text" class="input-small" name="minute" /> 分
+    <p class="help-block">0から23時の0から59分</p>
+  </div>
+</div>
+
+<button type="submit" class="btn">追加</button>
+</fieldset>
+</form>
+
+: if $schedules.size() > 0 {
+<table class="table">
+  <thead><tr><th>実行スケジュール</th><th>状態</th><th></th></tr></thead>
+  <tbody>
+  : for $schedules -> $schedule {
+  <tr>
+    <td style="vertical-align: center;"><: $schedule.schedule_jp :></td>
+    <td>
+      <div class="btn-group" data-toggle="buttons-radio">
+        <button class="schedule_execute btn btn-small btn-info <: $schedule.status ? 'active' : '' :>" data-uri="<: $c.req.uri_for('/toggle/schedule/'~$schedule.id) :>">有効</button>
+        <button class="schedule_stop btn btn-small btn-warning <: $schedule.status ? '' : 'active' :>" data-uri="<: $c.req.uri_for('/toggle/schedule/'~$schedule.id) :>">停止</button>
+      </div>
+    </td>
+    <td>
+    </td>
+    <td><button class="btn btn-small btn-danger xhr_confirm_button" data-confirm="本当にこの実行スケジュールを削除しますか？" data-uri="<: $c.req.uri_for('/delete/schedule/'~$schedule.id) :>">削除</button></td>
+  </tr>
+  : }
+</table>
+<script>
+$(function(){
+  $('.schedule_execute,.schedule_stop').click(function(event){
+    var target = $(event.target);
+    if (target.hasClass('active')) { return false; }
+    $.ajax({ type: 'POST', url: target.attr('data-uri'),
+      success: function(data) {
+        $(myform).find('.alert-error').hide();
+        if ( data.error !== 0 ) {
+          $.each(data.messages, function (param,message) {
+            var helpblock = $('<p class="validator_message help-block"></p>');
+            helpblock.text(message);
+            $(myform).find('[name="'+param+'"]').parents('div.controls').first().append(helpblock);
+            $(myform).find('[name="'+param+'"]').parents('div.control-group').first().addClass('error');
+          });
+        }
+      },
+      error: function() {
+        $(myform).find('.alert-error').show();
+      }
+    });
+    return true;
+  });
+});
+</script>
+: }
+
+<hr />
+<h3>クエリ実行履歴(最近10件)</h3>
+
+: if $histories.size() > 0 {
+<table class="table">
+<thead><tr><th>実行日時(最近10件)</th><th>起動方法</th><th>状態</th><th>完了日時</th><th></th></tr></thead>
+<tbody>
+: for $histories -> $history {
+<tr>
+  <td><: $history.started_at :></td>
+  <td>
+    : if $history.offset == nil {
+      不明
+    : } elsif $history.offset == -1 {
+      スケジュール
+    : } else {
+      <: $history.offset :>日前として起動
+    : }
+  </td>
+  : if $history.status == 'done' {
+  <td>完了</td><td><a href="<: $c.req.uri_for('/resultview/'~$query.id~'/'~$history.id) :>"><: $history.completed_at :></a></td>
+  : } elsif $history.status == 'error' {
+  <td>エラー</td><td><: $history.completed_at :></td>
+  : } else {
+  <td>実行中</td><td></td>
+  : }
+  <td><a href="<: $stash.urls.shib :>/q/<: $history.shib_query_id :>" target="_blank">shib url</a></td>
+</tr>
+: }
+</table>
+: }
+
+<form class="xhrpost form-inline" method="POST" action="<: $c.req.uri_for('/run/query/'~$query.id) :>">
+  <fieldset class="control-group">
+  <div class="form-actions">
+    <input class="span1" type="text" name="offset" value="0" />日前として <button class="btn btn-primary" type="submit">実行</button>
+  </div>
+  </fieldset>
+</form>
+
+: } # can_run
+
+: } # around content

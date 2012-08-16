@@ -1,0 +1,45 @@
+: cascade base
+: around content -> {
+<h2>結果データグラフ登録</h2>
+
+<div style="margin-top: 2em; margin-bottom: 1em;"><a href="<: $stash.urls.hrforecast :>">HRForecast</a>から複合グラフなどを追加します</div>
+
+<form class="xhrpost" method="POST" action="<: $c.req.uri_for('/register_view') :>">
+<fieldset class="control-group">
+
+<div class="control-group">
+<label class="control-label" style="font-size: large; font-weight: bold;">サービス名</label>
+<div class="controls">
+<select name="service">
+: for $services -> $service {
+<option><: $service :></option>
+: }
+</select>
+<p class="help-block"></p>
+</div>
+</div>
+
+<div class="control-group">
+<label class="control-label" style="font-size: large; font-weight: bold;">データの説明</label>
+<div class="controls">
+<input type="text" class="input-xxlarge" placeholder="どのような内容のデータか" name="label" />
+<p class="help-block"></p>
+</div>
+</div>
+
+<div class="control-group">
+<label class="control-label" style="font-size: large; font-weight: bold;">HRForecast URLで指定</label>
+<div class="controls">
+<input type="text" class="input-xxlarge" placeholder="<: $stash.urls.hrforecast :>/..." name="url" />
+<p class="help-block"></p>
+</div>
+</div>
+
+<div class="form-actions">
+<button class="btn btn-large btn-primary" type="submit">このデータを登録</button>
+</div>
+
+</fieldset>
+</form>
+
+: }

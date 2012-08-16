@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html" charset="utf-8">
+<link rel="shortcut icon" href="<: $c.req.uri_for('/favicon.ico') :>" type="image/vnd.microsoft.icon" />
+<link rel="stylesheet" href="http://fonts.googleapis.com/css?family=Anonymous+Pro:regular,italic,bold,bolditalic" />
+<link rel="stylesheet" href="<: $c.req.uri_for('/css/bootstrap.min.css') :>" />
+<link rel="stylesheet" href="<: $c.req.uri_for('/css/shibui.css') :>" />
+
+<script type="text/javascript" src="<: $c.req.uri_for('/js/jquery-1.7.1.min.js') :>"></script>
+<script type="text/javascript" src="<: $c.req.uri_for('/js/bootstrap.min.js') :>"></script>
+<script type="text/javascript" src="https://www.google.com/jsapi"></script>
+<script type="text/javascript" src="<: $c.req.uri_for('/js/shibui.js') :>"></script>
+<script type="text/javascript">
+$(function(){
+  $('form.xhrpost').each(setXhrpost);
+  $('button.xhr_confirm_button').each(setXhrConfirmBtn);
+});
+</script>
+
+<title>Shib::ShibUI</title>
+<style type='text/css'>
+body {
+  padding-top: 60px;
+  padding-bottom: 40px;
+  background-color: #fff;
+}
+.sidebar-nav {
+  padding: 12px 0;
+}
+.modal > form {
+  margin: 0;
+}
+span.sun {color:red;}
+span.mon {}
+span.tue {}
+span.wed {}
+span.thu {}
+span.fri {}
+span.sat {color:blue}
+</style>
+</head>
+<body>
+
+<div class="navbar navbar-fixed-top">
+  <div class="navbar-inner">
+    <div class="container-fluid">
+      <a class="brand" href="<: $c.req.uri_for('/') :>">ShibUI</a>
+      <ul class="nav">
+        <li class=""><a href="<: $c.req.uri_for('/') :>">TOP</a></li>
+        <li class=""><a href="<: $c.req.uri_for('/docs') :>">使いかた</a></li>
+        <li class=""><a href="<: $c.req.uri_for('/register') :>">クエリ新規登録</a></li>
+        <li class=""><a href="<: $c.req.uri_for('/register_view') :>">結果データグラフ登録</a></li>
+        <li class=""><a href="<: $c.req.uri_for('/schedules') :>">クエリ実行予定一覧</a></li>
+        <li class=""><a href="<: $c.req.uri_for('/query_builder') :>">クエリ作成ツール</a></li>
+      </ul>
+      <ul class="nav pull-right">
+        <li class="active"><a href="#"><: $c.stash['username'] :></a></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div class="container-fluid">
+  <div class="row-fluid">
+    <div class="span3">
+      <div class="well sidebar-nav">
+        <ul class="nav nav-list">
+          : if $c.stash.sidebar.view {
+          <li class="nav-header"><: $c.stash.sidebar.view.name :></li>
+          : for $c.stash.sidebar.view.items -> $item {
+          <li class="<: $item.active ? "active" : "" :>">
+            <a href="<: $c.req.uri_for('/'~$c.stash.sidebar.view.path~'/'~$item.service) :>">
+              <i class="icon-signal"></i><: $item.service :>
+            </a>
+          </li>
+          : }
+          : }
+
+          : if $c.stash.sidebar.query {
+          <li class="nav-header"><: $c.stash.sidebar.query.name :></li>
+          : for $c.stash.sidebar.query.items -> $item {
+          <li class="<: $item.active ? "active" : "" :>">
+            <a href="<: $c.req.uri_for('/'~$c.stash.sidebar.query.path~'/'~$item.service) :>">
+              <i class="icon-pencil"></i><: $item.service :>
+            </a>
+          </li>
+          : }
+          : }
+          
+          : if $c.stash.sidebar.oneshot_users {
+          <li class="nav-header"><: $c.stash.sidebar.oneshot_users.name :></li>
+          : for $c.stash.sidebar.oneshot_users.items -> $item {
+          <li class="<: $item.active ? "active" : "" :>">
+            <a href="<: $c.req.uri_for('/query_builder/show/'~$item.id ) :>">
+              : if $item.status == 'waiting' {
+              <i class="icon-refresh"></i><: $item.started_at :> (<: $item.status :>)
+              : } else {
+              <i class="icon-file"></i><: $item.started_at :> (<: $item.status :>)
+              : }
+            </a>
+          </li>
+          : }
+          : }
+
+          : if $c.stash.sidebar.oneshot_all {
+          <li class="nav-header"><: $c.stash.sidebar.oneshot_all.name :></li>
+          : for $c.stash.sidebar.oneshot_all.items -> $item {
+          <li class="<: $item.active ? "active" : "" :>">
+            <a href="<: $c.req.uri_for('/query_builder/show/'~$item.id ) :>">
+              : if $item.status == 'waiting' {
+              <i class="icon-refresh"></i><: $item.started_at :> (<: $item.status :>)
+              : } else {
+              <i class="icon-file"></i><: $item.started_at :> (<: $item.status :>)
+              : }
+            </a>
+          </li>
+          : }
+          : }
+
+        </ul>
+      </div><!--/.well -->
+    </div><!--/span-->
+
+    <div class="span9">
+      : block content -> { }
+    </div><!--/span-->
+  </div><!--/row-->
+
+  <hr>
+
+  <footer>
+  <p>Powered by Kossy</p>
+  </footer>
+</div><!--/.fluid-container-->
+
+</body>
+</html>

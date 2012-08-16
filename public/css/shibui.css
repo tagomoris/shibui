@@ -1,0 +1,20 @@
+.editor {
+    border: 1px solid #c0c0f8;
+    font-family: 'Anonymous Pro', serif;
+    font-size: medium;
+    font-style: normal;
+    font-weight: 700;
+    text-decoration: none;
+    text-transform: none;
+    letter-spacing: 0em; 
+    word-spacing: 0em; 
+    line-height: 1.2;
+}
+
+.changed {
+    background-color: #eeeeff;
+}
+
+.row-fluid [class*="span"] {
+    display: inline;
+}

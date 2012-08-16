@@ -1,0 +1,61 @@
+: cascade base
+: around content -> {
+<h2>クエリ実行結果</h2>
+
+<dl class="dl-horizontal">
+  <dt>-</dt><dd><a href="<: $c.req.uri_for('/query_builder/edit/'~$oneshot.id) :>">このクエリを編集</a></dd>
+  <dt>クエリ</dt><dd><pre><: $oneshot.query :></pre>
+  <dt>実行ユーザ</dt><dd><: $oneshot.created_by :></dd>
+  : if $oneshot.status == 'waiting' && $oneshot.progress {
+  <dt>状態</dt>
+  <dd>
+    <: $oneshot.status :> (map:<: $oneshot.progress.map :>, reduce:<: $oneshot.progress.reduce :>)
+  </dd>
+  <dt>操作</dt>
+  <dd>
+    <form class="xhrpost" method="POST" action="<: $c.req.uri_for('/query_builder/kill/'~$oneshot.id) :>" style="display:inline;">
+      <button class="btn btn-warning" type="subimt">クエリを中断</button>
+    </form>
+  </dd>
+  : } else {
+  <dt>状態</dt><dd><: $oneshot.status :></dd>
+  : }
+  <dd>
+  </dd>
+  <dt>開始日時</dt><dd><: $oneshot.started_at :></dd>
+  <dt>完了日時</dt><dd><: $oneshot.completed_at :></dd>
+  <dt>shib url</dt><dd><a target="_blank" href="<: $stash.urls.shib :>/q/<: $oneshot.shib_query_id :>">LINK</a></dd>
+  : if $oneshot.status == 'done' {
+  <dt>行数</dt><dd><: $data.size() :></dd>
+  <dt>ダウンロード</dt>
+  <dd>
+    <a href="<: $stash.urls.shib :>/download/tsv/<: $resultid :>">TSV</a>
+    /
+    <a href="<: $stash.urls.shib :>/download/csv/<: $resultid :>">CSV</a>
+  </dd>
+  : }
+</dl>
+
+: if $oneshot.status == 'done' {
+
+<h3>データ</h3>
+<table class="table">
+<thead><tr>
+: for $header -> $h {
+  <th><: $h :></th>
+: }
+</tr></thead>
+<tbody>
+: for $data -> $row {
+<tr>
+  : for $row -> $col {
+  <td><: $col :></td>
+  : }
+</tr>
+: }
+</tbody>
+</table>
+
+: }
+
+: } # around content

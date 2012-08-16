@@ -1,0 +1,19 @@
+: cascade base
+: around content -> {
+<h2>結果データ一覧: <: $service :></h2>
+
+: for $views -> $view {
+<div style="margin-top: 2em; font-size: large;">
+<div>
+: if $view.complex {
+<span class="label label-success">HF参照</span>
+: } else {
+<span class="label label-success">単独データ</span>
+: }
+<a href="<: $c.req.uri_for($view.graph_path) :>"><: $view.label :></a>
+</div>
+<div style="float: right; margin-top: -30px;"><button class="btn btn-small btn-danger xhr_confirm_button" data-confirm="本当に削除しますか？" data-uri="<: $c.req.uri_for('/delete/view/'~$view.id) :>">削除</button></div>
+<iframe src="<: $view.iframe_uri :>" width="100%" height="255" frameborder="0" marginwidth="0" marginheight="0" scrolling="no"></iframe>
+: } # for views
+
+: }

@@ -1,0 +1,469 @@
+: cascade base
+: around content -> {
+<h2>クエリ作成</h2>
+
+<form class="form-horizontal">
+  <div class="builder_add_item_block" style="margin-top: 10px;">
+    <fieldset>
+    <div class="control-group">
+      <label class="control-label" for="builder_add_cond_item">項目追加</label>
+      <div class="controls">
+        <span style="padding-left: 10px; ">条件:</span>
+        <select id="builder_add_cond_item">
+          <option value="none">選択してください</option>
+          <option value="status">ステータスコード</option>
+          <option value="path">パス</option>
+          <option value="query">クエリ文字列</option>
+          <option value="referer">リファラ</option>
+          <option value="refererhost">リファラ(ホスト)</option>
+          <option value="refererpath">リファラ(パス)</option>
+          <option value="refererquery">リファラ(クエリ)</option>
+          <option value="agent">UserAgent</option>
+          <option value="agenttype">UserAgent(タイプ別)</option>
+          <option value="method">メソッド</option>
+          <option value="virtualhost">バーチャルホスト</option>
+        </select>
+        <span style="padding-left: 30px; padding-left:10px; ">出力:</span>
+        <select id="builder_add_result_item">
+          <option value="none">選択してください</option>
+          <option value="fields">フィールド</option>
+          <option value="aggregates">集計関数</option>
+        </select>
+      </div>
+    </div>
+    </fieldset>
+  </div>
+</form>
+
+: if $saved {
+<div id="condition_saved_data" style="display:none;">
+  : for $conditions -> $condition {
+  <div class="saved_item"
+    data-group="condition"
+    data-type="<: $condition.type :>"
+    data-num="<: $condition.num :>"
+    data-val="<: $condition.val :>">
+    : for $condition.opts.keys() -> $key {
+    <div class="saved_option" data-name="<: $key :>" data-val="<: $condition.opts[$key] :>"></div>
+    : }
+  </div>
+  : }
+</div>
+: }
+
+: if $saved {
+<div id="result_saved_data" style="display:none;">
+  : for $results -> $result {
+  <div class="saved_item"
+    data-group="result"
+    data-type="<: $result.type :>"
+    data-num="<: $result.num :>"
+    data-val="<: $result.val :>">
+    : for $result.opts.keys() -> $key {
+    <div class="saved_option" data-name="<: $key :>" data-val="<: $result.opts[$key] :>"></div>
+    : }
+  </div>
+  : }
+</div>
+: }
+
+
+<div style="display: none;" id="input_parts_warehouse">
+
+  <!-- service item -->
+  <div id="cond_item_template_service" class="cond_item" style="display:inline;">
+    <input class="span3" type="text" name="" placeholder="service name" />
+    <a class="btn cond_item_remove_action" href="#"><i class="icon-remove"></i></a>
+  </div>
+
+  <!-- date item -->
+  <div id="cond_item_template_date" class="cond_item" style="display:inline;">
+    <select name="" class="cond_item_change_action cond_item_select_date">
+      <option value="yesterday">昨日</option>
+      <option value="1and2">昨日と一昨日</option>
+      <option value="7days">昨日から一週間前まで</option>
+      <option value="today">今日</option>
+      <option value="lastmonth">先月</option>
+      <option value="specified">日付(yyyymmhh or yyyymmddhh)指定</option>
+    </select>
+    <span class="dateinput" style="display:none;">
+      <input class="span2" type="text" name="input" placeholder="20120630 or 2012063023" />
+    </span>
+    <span class="hourinput" style="display:none;">
+      <input class="span1" type="text" name="hour" value="00" placeholder="00..23" />時
+    </span>
+    <a class="btn cond_item_remove_action" href="#"><i class="icon-remove"></i></a>
+  </div>
+
+  <!-- status item -->
+  <div id="cond_item_template_status" class="cond_item" style="display:inline;">
+    <select name="">
+      <option>2xx</option>
+      <option>200</option>
+      <option>3xx</option>
+      <option>4xx</option>
+      <option>401</option>
+      <option>403</option>
+      <option>404</option>
+      <option>5xx</option>
+      <option>500</option>
+      <option>503</option>
+    </select>
+    <a class="btn cond_item_remove_action" href="#"><i class="icon-remove"></i></a>
+  </div>
+
+  <!-- path item -->
+  <div id="cond_item_template_path" class="cond_item" style="display:inline;">
+    <select name="match">
+      <option value="equal">一致</option>
+      <option value="like">部分一致(LIKE %)</option>
+      <option value="rlike">正規表現(RLIKE)</option>
+    </select>
+    <input class="span6" type="text" name="" placeholder="/path/to/content..." />
+    <a class="btn cond_item_remove_action" href="#"><i class="icon-remove"></i></a>
+  </div>
+
+  <!-- query item --> 
+  <div id="cond_item_template_query" class="cond_item" style="display:inline;">
+    <input class="span2" type="text" name="key" placeholder="query key" />
+    <select name="match">
+      <option value="equal">一致</option>
+      <option value="like">部分一致(LIKE %)</option>
+      <option value="rlike">正規表現(RLIKE)</option>
+    </select>
+    <input class="span3" type="text" name="" placeholder="query value" />
+    <a class="btn cond_item_remove_action" href="#"><i class="icon-remove"></i></a>
+  </div>
+
+  <!-- referer -->
+  <div id="cond_item_template_referer" class="cond_item" style="display:inline;">
+    <select name="match">
+      <option value="equal">一致</option>
+      <option value="like">部分一致(LIKE %)</option>
+      <option value="rlike">正規表現(RLIKE)</option>
+    </select>
+    <input class="span6" type="text" name="" placeholder="http://hostname/path/..." />
+    <a class="btn cond_item_remove_action" href="#"><i class="icon-remove"></i></a>
+  </div>
+
+  <!-- refererhost -->
+  <div id="cond_item_template_refererhost" class="cond_item" style="display:inline;">
+    <select name="match">
+      <option value="equal">一致</option>
+      <option value="like">部分一致(LIKE %)</option>
+      <option value="rlike">正規表現(RLIKE)</option>
+    </select>
+    <input class="span6" type="text" name="" placeholder="hostname pattern" />
+    <a class="btn cond_item_remove_action" href="#"><i class="icon-remove"></i></a>
+  </div>
+
+  <!-- refererpath -->
+  <div id="cond_item_template_refererpath" class="cond_item" style="display:inline;">
+    <select name="match">
+      <option value="equal">一致</option>
+      <option value="like">部分一致(LIKE %)</option>
+      <option value="rlike">正規表現(RLIKE)</option>
+    </select>
+    <input class="span6" type="text" name="" placeholder="/path/pattern/..." />
+    <a class="btn cond_item_remove_action" href="#"><i class="icon-remove"></i></a>
+  </div>
+
+  <!-- refererquery -->
+  <div id="cond_item_template_refererquery" class="cond_item" style="display:inline;">
+    <input class="span2" type="text" name="key" placeholder="query key" />
+    <select name="match">
+      <option value="equal">一致</option>
+      <option value="like">部分一致(LIKE %)</option>
+      <option value="rlike">正規表現(RLIKE)</option>
+    </select>
+    <input class="span3" type="text" name="" placeholder="query value" />
+    <a class="btn cond_item_remove_action" href="#"><i class="icon-remove"></i></a>
+  </div>
+  
+  <!-- agent item -->
+  <div id="cond_item_template_agent" class="cond_item" style="display:inline;">
+    <select name="match">
+      <option value="equal">一致</option>
+      <option value="like">部分一致(LIKE %)</option>
+      <option value="rlike">正規表現(RLIKE)</option>
+    </select>
+    <input class="span6" type="text" name="" placeholder="User Agent pattern..." />
+    <a class="btn cond_item_remove_action" href="#"><i class="icon-remove"></i></a>
+  </div>
+
+  <!-- agenttype item -->
+  <div id="cond_item_template_agenttype" class="cond_item" style="display:inline;">
+    <select name="" style="span4">
+      <option value="pvagents">PVカウント対象 (PC/SmartPhone/MobilePhone/Appliance)</option>
+      <option value="pc">PC</option>
+      <option value="smartphone">SmartPhone</option>
+      <option value="mobilephone">MobilePhone</option>
+      <option value="appliance">Appliance(組み込み機器類)</option>
+      <option value="misc">Misc(RSSリーダ等)</option>
+      <option value="crawler">Crawler(クローラ・Bot等)</option>
+      <option value="unknown">Unknown</option>
+    </select>
+    <a class="btn cond_item_remove_action" href="#"><i class="icon-remove"></i></a>
+  </div>
+
+  <!-- method item -->
+  <div id="cond_item_template_method" class="cond_item" style="display:inline;">
+    <select name="">
+      <option>GET</option>
+      <option>HEAD</option>
+      <option>POST</option>
+      <option>PUT</option>
+      <option>DELETE</option>
+    </select>
+    <a class="btn cond_item_remove_action" href="#"><i class="icon-remove"></i></a>
+  </div>
+
+  <!-- virtualhost -->
+  <div id="cond_item_template_virtualhost" class="cond_item" style="display:inline;">
+    <select name="match">
+      <option value="equal">一致</option>
+      <option value="like">部分一致(LIKE %)</option>
+      <option value="rlike">正規表現(RLIKE)</option>
+    </select>
+    <input class="span6" type="text" name="" placeholder="hostname pattern..." />
+    <a class="btn cond_item_remove_action" href="#"><i class="icon-remove"></i></a>
+  </div>
+
+  <!-- cond or template -->
+  <div class="cond_item_or"> OR </div>
+
+  <!-- result date -->
+  <div id="result_item_template_rdate" class="result_item" style="display: inline;">
+    <select name="" class="result_item_change_action result_item_select_date">
+      <option value="datefield">データの日時 (yyyymmdd or yyyymmddhh)</option>
+      <option value="month">月のみ (yyyymm)</option>
+      <option value="select">実行時に対して固定で出力</option>
+    </select>
+    <span class="dateoption" style="display:none;">
+      <select name="option">
+        <option value="today">実行日(yyyymmdd)</option>
+        <option value="today_month">実行日 月のみ(yyyymm)</option>
+        <option value="yesterday">実行前日(yyyymmdd)</option>
+        <option value="yesterday_month">実行前日 月のみ(yyyymm)</option>
+        <option value="last_month">実行日の前月 (yyyymm)</option>
+      </select>
+    </span>
+    <a class="btn result_item_remove_action" href="#"><i class="icon-remove"></i></a>
+  </div>
+
+  <!-- result field -->
+
+  <div id="result_item_template_fields" class="result_item" style="display:inline;">
+    <!-- field name selection -->
+    <select name="" class="result_item_change_action result_item_select_fieldtype">
+      <option value="time">時刻等</option>
+      <option value="request">リクエスト</option>
+      <option value="response">レスポンス</option>
+      <option value="userinfo">ユーザ情報</option>
+    </select>
+    <span class="timeoption">
+      <select name="time">
+        <option value="hhmmss">時刻(hhmmss)</option>
+        <option value="hhmm">時刻(時分 hhmm)</option>
+        <option value="hh">時刻(時のみ hh)</option>
+      </select>
+    </span>
+    <span class="requestoption" style="display:none;">
+      <select name="request">
+        <option value="method">リクエストメソッド</option>
+        <option value="full_path">パス(クエリ含)</option>
+        <option value="path">パス(クエリ除外)</option>
+        <option value="topdir">トップレベルのディレクトリ名(/HERE/...)</option>
+        <option value="vhost">バーチャルホスト名</option>
+        <option value="refsite">リファラのホスト名のみ</option>
+        <option value="referer">リファラ</option>
+      </select>
+    </span>
+    <span class="responseoption" style="display:none;">
+      <select name="response">
+        <option value="status">レスポンスコード</option>
+        <option value="bytes">レスポンスバイト数</option>
+        <option value="duration">処理時間(マイクロ秒)</option>
+      </select>
+    </span>
+    <span class="userinfooption" style="display:none;">
+      <select name="userinfo">
+        <option value="agent">UserAgent文字列</option>
+        <option value="agentcategory">ユーザのタイプ(PC, SmartPhone, MobilePhone,....)</option>
+        <option value="agentname">ブラウザ名</option>
+        <option value="agentos">OS</option>
+        <option value="rhost">アクセス元(IP/Host)</option>
+        <option value="userlabel">ユーザ識別文字列</option>
+      </select>
+    </span>
+    <a class="btn result_item_remove_action" href="#"><i class="icon-remove"></i></a>
+  </div>
+
+  <div id="result_item_template_aggregates" class="result_item" style="display:inline;">
+    <select name="" class="result_item_change_action result_item_select_aggregates" style="width:190px;">
+      <option value="count">行数カウント</option>
+      <option value="uucount">ユニークユーザ数カウント</option>
+      <option value="sum">合計</option>
+      <option value="avg">平均</option>
+      <option value="min">最小</option>
+      <option value="max">最大</option>
+      <option value="50percentile">中央値</option>
+      <option value="90percentile">90パーセンタイル値</option>
+      <option value="95percentile">95パーセンタイル値</option>
+      <option value="98percentile">98パーセンタイル値</option>
+    </select>
+    <span class="countoption">
+      <select name="count" class="result_item_change_action result_item_select_countoption" style="width:180px;">
+        <option value="lines">全行対象</option>
+        <option value="path">パス条件</option>
+        <option value="vhost">バーチャルホスト条件</option>
+        <option value="referer">リファラ条件</option>
+        <option value="pvagents">PVカウント対象の行数</option>
+        <option value="pc">PCのみ</option>
+        <option value="smartphone">SmartPhoneのみ</option>
+        <option value="mobilephone">MobilePhoneのみ</option>
+        <option value="appliance">Applianceのみ</option>
+        <option value="misc">Miscのみ</option>
+        <option value="crawler">Crawlerのみ</option>
+        <option value="unknown">Unknownのみ</option>
+      </select>
+      <span class="countextoption" style="display:none;">
+        <select name="countextmatch" style="width:130px;">
+          <option value="equal">一致</option>
+          <option value="like">部分一致(LIKE %)</option>
+          <option value="rlike">正規表現(RLIKE)</option>
+        </select>
+        <input class="span3" type="text" name="countext" placeholder="pattern"  />
+      </span>
+    </span>
+    <span class="numaggroption" style="display:none;">
+      <select name="numaggr">
+        <option value="bytes">バイト数</option>
+        <option value="duration">処理時間</option>
+      </select>
+    </span>
+    <a class="btn result_item_remove_action" href="#"><i class="icon-remove"></i></a>
+  </div>
+
+  <!-- control group cond_item template -->
+  <div id="control_group_cond_template" class="control-group">
+    <label class="control-label"></label>
+    <div class="controls">
+      <div class="cond_item_add" style="display: inline;">
+        <a class="btn btn-info cond_item_add_action" href="#"><i class="icon-plus"></i></a>
+      </div>
+    </div>
+  </div>
+
+  <!-- control group result_item template -->
+  <div id="control_group_result_template" class="control-group">
+    <label class="control-label"></label>
+    <div class="controls">
+      <div class="result_item_add" style="display: inline;">
+        <a class="btn btn-info result_item_add_action" href="#"><i class="icon-plus"></i></a>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script type="text/javascript" src="<: $c.req.uri_for('/js/shibui_querybuilder.js') :>"></script>
+
+<form class="form-horizontal" id="query_structure">
+  <div id="cond_block">
+    <fieldset>
+    <legend>クエリ対象条件</legend>
+
+    <div class="control-group">
+      <label class="control-label" for="service00">サービス</label>
+      <div class="controls" id="cond_service">
+        <div class="cond_item" style="display:inline;">
+          <input class="span3" type="text" name="service0" placeholder="service name" />
+          <a class="btn btn-inverse cond_item_remove_action" href="#"><i class="icon-remove"></i></a>
+        </div>
+        <div class="cond_item_add" style="display:inline;">
+          <a class="btn btn-info cond_item_add_action" href="#"><i class="icon-plus"></i></a>
+        </div>
+      </div>
+    </div>
+
+    <div class="control-group">
+      <label class="control-label" for="date00">日時</label>
+      <div class="controls" id="cond_date">
+        <div class="cond_item" style="display:inline;">
+          <select name="date0" class="cond_item_change_action cond_item_select_date">
+            <option value="yesterday">昨日</option>
+            <option value="1and2">昨日と一昨日</option>
+            <option value="7days">昨日から一週間前まで</option>
+            <option value="today">今日</option>
+            <option value="lastmonth">先月</option>
+            <option value="specified">日付(yyyymmhh or yyyymmddhh)指定</option>
+          </select>
+          <span class="dateinput" style="display:none;">
+            <input class="span2" type="text" name="date0_input" placeholder="20120630" />
+          </span>
+          <span class="hourinput" style="display:none;">
+            <input class="span1" type="text" name="date0_hour" value="00" placeholder="0...23" />時
+          </span>
+          <a class="btn btn-inverse cond_item_remove_action" href="#"><i class="icon-remove"></i></a>
+        </div>
+        <div class="cond_item_add" style="display: inline;">
+          <a class="btn btn-info cond_item_add_action" href="#"><i class="icon-plus"></i></a>
+        </div>
+      </div>
+    </div>
+
+    </fieldset>
+  </div>
+
+  <div id="result_block">
+    <fieldset>
+    <legend>取得データ</legend>
+
+    <div class="control-group">
+      <label class="control-label" for="rdate0">日時</label>
+      <div class="controls" id="result_rdate">
+        <div class="result_item" style="display: inline;">
+          <select name="rdate0" class="result_item_change_action result_item_select_date">
+            <option value="datefield">データの日時 (yyyymmdd or yyyymmddhh)</option>
+            <option value="month">月のみ (yyyymm)</option>
+            <option value="select">実行時に対して固定で出力</option>
+          </select>
+          <span class="dateoption" style="display:none;">
+            <select name="rdate0_option">
+              <option value="today">実行日(yyyymmdd)</option>
+              <option value="today_month">実行日 月のみ(yyyymm)</option>
+              <option value="yesterday">実行前日(yyyymmdd)</option>
+              <option value="yesterday_month">実行前日 月のみ(yyyymm)</option>
+              <option value="last_month">実行日の前月 (yyyymm)</option>
+            </select>
+          </span>
+          <a class="btn btn-inverse result_item_remove_action" href="#"><i class="icon-remove"></i></a>
+        </div>
+        <div class="result_item_add" style="display: inline;">
+          <a class="btn btn-info result_item_add_action" href="#"><i class="icon-plus"></i></a>
+        </div>
+      </div>
+    </div>
+
+    </fieldset>
+  </div>
+</form>
+
+
+<form class="form-inline" method="POST" action="<: $c.req.uri_for('/query_builder/run') :>">
+  <legend>クエリ</legend>
+  : if $saved {
+  <div id="query_saved_data" data-query="<: $oneshot.query :>"></div>
+  : }
+  <textarea class="editor" name="query" id="query_dumped" style="width:800px; height:200px; font-size: large;"></textarea>
+  <fieldset class="control-group">
+  <div class="form-actions">
+    <input class="span1" id="query_offset" type="text" name="offset" value="0" />日前として
+    <button class="btn btn-primary" id="execute_builder_query" type="button">実行</button>
+  </div>
+  <div class="alert alert-error" id="run_query_error" style="display:none;"></div>
+  </fieldset>
+</form>
+
+: } # around content

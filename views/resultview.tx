@@ -1,0 +1,36 @@
+: cascade base
+: around content -> {
+<h2>クエリ実行結果</h2>
+
+<dl class="dl-horizontal">
+  <dt>説明</dt><dd><: $query.description :></dd>
+  <dt>開始日時</dt><dd><: $history.started_at :></dd>
+  <dt>完了日時</dt><dd><: $history.completed_at :></dd>
+  <dt>行数</dt><dd><: $data.size() :></dd>
+  <dt>ダウンロード</dt>
+  <dd>
+    <a href="<: $stash.urls.shib :>/download/tsv/<: $resultid :>">TSV</a>
+    /
+    <a href="<: $stash.urls.shib :>/download/csv/<: $resultid :>">CSV</a>
+  </dd>
+</dl>
+
+<h3>データ</h3>
+<table class="table">
+<thead><tr>
+: for $header -> $h {
+  <th><: $h :></th>
+: }
+</tr></thead>
+<tbody>
+: for $data -> $row {
+<tr>
+  : for $row -> $col {
+  <td><: $col :></td>
+  : }
+</tr>
+: }
+</tbody>
+</table>
+
+: } # around content

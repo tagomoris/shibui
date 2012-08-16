@@ -1,0 +1,22 @@
+: cascade base
+: around content -> {
+<h2>クエリ一覧: <: $service :></h2>
+
+: for $queries -> $query {
+<div class="well" style="margin-top: 1em;<: (! $query.status) ? ' background-color: #ffefef;' : '' :>">
+<div style="font-size: large; font-weight: bold;">
+  <a href="<: $c.req.uri_for('/query/'~$query.id) :>" style="color: black;"><: $query.description // '(詳細未記入)' :></a>
+</div>
+: if (! $query.status) {
+<div style="float: right; margin-top: -30px;"><button class="btn btn-small btn-danger xhr_confirm_button" data-confirm="本当にこのクエリを削除しますか？" data-uri="<: $c.req.uri_for('/delete/query/'~$query.id) :>">削除</button></div>
+: }
+<div class="editor" style="background-color: #f8f8f8"><: $query.query :></div>
+: if (! $query.status) {
+<div style="color: red; font-weight: bold;">無効</div>
+: }
+<div style="float: right;"><: $query.modified_at :> by <: $query.modified_by :></div>
+</div>
+: } # for queries
+
+
+: }

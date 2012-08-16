@@ -1,0 +1,19 @@
+# For MacOS:
+#
+.DS_Store
+
+# For TextMate
+*.tmproj
+tmtags
+
+# For emacs:
+*~
+\#*
+.\#*
+
+# For vim:
+*.swp
+
+Makefile
+MYMETA*
+extlib/

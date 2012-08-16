@@ -1,0 +1,45 @@
+: cascade base
+: around content -> {
+<h2>結果データ詳細</h2>
+<h3><: $view.label :></h3>
+<div>from <a href="<: $view.hr_uri :>" target="_blank">HRForecast</a></div>
+<iframe src="<: $view.iframe_uri :>" width="100%" height="355" frameborder="0" marginwidth="0" marginheight="0" scrolling="no"></iframe>
+
+<h3>関連クエリ</h3>
+
+<table class="table">
+<thead><tr><th>クエリ</th><th>状態</th><th>実行スケジュール</th><th>最後の実行記録</th></tr></thead>
+<tbody>
+: for $queries -> $query {
+<tr>
+  <td><a href="<: $c.req.uri_for('/query/'~$query.id) :>"><: $query.description :></a></td>
+  <td>
+  : if $query.status {
+    <span class="label label-info">有効</span>
+  : } else {
+    <span class="label label-warning">停止</span>
+  : }
+  </td>
+  <td>
+  : if $query.schedules_jp.size() > 0 {
+    : for $query.schedules_jp -> $schedule_jp {
+      <p><: $schedule_jp :></p>
+    : }
+  : } else {
+    なし
+  : }
+  </td>
+  <td>
+  : if $query.last_executed {
+    <: $query.last_executed.started_at :> 開始
+    : if $query.last_executed.completed_at {
+      <: $query.last_executed.completed_at :> 完了
+    : }
+  : }
+  </td>
+</tr>
+: }
+</tbody>
+</table>
+
+: } # around content
