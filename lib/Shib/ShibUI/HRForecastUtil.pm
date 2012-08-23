@@ -31,7 +31,7 @@ sub parse_url {
 
 sub api_url {
     my ($hr_service, $hr_section, $hr_graphname) = @_;
-    hrforecast_host() . '/api/' . join('/', $hr_service, $hr_section, $hr_graphname);
+    'http://' . hrforecast_host() . '/api/' . join('/', $hr_service, $hr_section, $hr_graphname);
 }
 
 sub view_url {
