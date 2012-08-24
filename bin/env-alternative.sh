@@ -16,13 +16,17 @@ if [ "x"$PLACK_ENV = "x" ]; then
     fi
 fi
 
+envfile=$shibuidir"/bin/env.sh"
+CONFIG="config.pl"
+
 if [ $env = "production" ]; then
-    envfile=$shibuidir"/bin/env.production.sh"
-    CONFIG="production.pl"
+    if [ -f $shibuidir"/bin/env.production.sh" ]; then
+        envfile=$shibuidir"/bin/env.production.sh"
+    fi
+    if [ -f "production.pl" ]; then
+        CONFIG="production.pl"
+    fi
     export PLACK_ENV="production"
-else
-    envfile=$shibuidir"/bin/env.sh"
-    CONFIG="config.pl"
 fi
 
 source $envfile
