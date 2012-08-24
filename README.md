@@ -43,13 +43,13 @@ shib を git://github.com/tagomoris/shib.git からcloneし、ドキュメント
 
 HRForecast を git://github.com/kazeburo/HRForecast.git からcloneし、セットアップします。現状セットアップ方法が書かれていませんが、以下のような感じでセットアップできるはずです。
 
-1. perlbrew をインストールし install-cpanm した上で 5.14.x などの新しめのperlをインストールする
+1. perlbrew をインストールし `install-cpanm` した上で 5.14.x などの新しめのperlをインストールする
 2. MySQL 5.1 or 5.5 あたりをインストールし、適当にデータベース名を決め schema.sql を mysql コマンドに流し込んでテーブルを作る
 3. 依存モジュールをインストールする
-   * cpanm -n -Lextlib --installdeps . 
+   * `cpanm -n -Lextlib --installdeps .`
 3. config.pl を更新する
 4. hrforecast.pl を実行する
-   * perl -Ilib -Iextlib/lib/perl5 hrforecast.pl -c config.pl
+   * `perl -Ilib -Iextlib/lib/perl5 hrforecast.pl -c config.pl`
 
 最後の hrforecast.pl の実行は shib と同じく daemonize tool 経由での実行をおすすめします。リバースプロキシの設定も行っておくと良いでしょう。画面の表示、データの登録、グラフの表示が正常に行えることを確認しておきます。
 
@@ -139,13 +139,15 @@ perlbrew および MySQL を使えるようにセットアップしておく必�
  * Hive Server を起動するサーバに woothee.jar を置き、CLASSPATHにそのパスを含めた状態で起動する
  * shib の設定ファイルの setup_queries セクションを以下のように設定する
 
+設定は shib の設定ファイル config.js で行います。
+
     hiveserver: {
       host: 'your.hive.server.local',
       port: 10000,
       support_database: true,
       default_database: 'default',
       setup_queries: [
-        "add jar /home/edge-dev/configs/lib/woothee.jar;",
+        "add jar /home/USERNAME/PATH/TO/CLASSPATH/woothee.jar;",
         "create temporary function parse_agent as 'is.tagomor.woothee.hive.ParseAgent';",
         "create temporary function is_pc as 'is.tagomor.woothee.hive.IsPC';",
         "create temporary function is_smartphone as 'is.tagomor.woothee.hive.IsSmartPhone';",
