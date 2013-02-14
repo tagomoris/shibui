@@ -46,8 +46,8 @@ if [ x"$?" = "x1" ] ; then
 
     cat $TMP_TARGET > $TARGET
 
-    genstart=$(crontab -l | grep '# AUTOGEN Shib::ShibUI::GenerateCrontab #' | sed -e 's/^\([0-9]*\):.*$/\1/')
-    genend=$(crontab -l | grep '# END OF AUTOGEN #' | sed -e 's/^\([0-9]*\):.*$/\1/')
+    genstart=$(crontab -l | grep -n '# AUTOGEN Shib::ShibUI::GenerateCrontab #' | sed -e 's/^\([0-9]*\):.*$/\1/')
+    genend=$(crontab -l | grep -n '# END OF AUTOGEN #' | sed -e 's/^\([0-9]*\):.*$/\1/')
     if [ "x"$gemstart = "x" -o "x"$genend = "x" ]; then
         echo "ERROR: crontab auto generated lines marker not found"
         exit 1
