@@ -44,14 +44,14 @@ if [ x"$?" = "x1" ] ; then
     echo "crontab update found"
     echo ""
 
-    cat $TMP_TARGET > $TARGET
-
     genstart=$(crontab -l | grep -n '# AUTOGEN Shib::ShibUI::GenerateCrontab #' | sed -e 's/^\([0-9]*\):.*$/\1/')
     genend=$(crontab -l | grep -n '# END OF AUTOGEN #' | sed -e 's/^\([0-9]*\):.*$/\1/')
-    if [ "x"$gemstart = "x" -o "x"$genend = "x" ]; then
-        echo "ERROR: crontab auto generated lines marker not found"
+    if [ "x"$genstart = "x" -o "x"$genend = "x" ]; then
+        echo "ERROR: source crontab auto generated lines marker not found"
         exit 1
     fi
+
+    cat $TMP_TARGET > $TARGET
 
     echo "Updating crontab ------------------------"
     crontab -l | sed '/^# AUTOGEN Shib::ShibUI::GenerateCrontab #/,/^# END OF AUTOGEN #/d' | cat - $TARGET
