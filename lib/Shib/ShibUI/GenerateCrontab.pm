@@ -20,11 +20,9 @@ sub data {
 sub execute {
     my ($this) = @_;
     my $schedules = $this->data->valid_schedules();
-    print "# AUTOGEN Shib::ShibUI::GenerateCrontab #\n";
     foreach my $schedule (@$schedules) {
         print join(" ", $schedule->{schedule}, $RUN_QUERY_SCRIPT_PATH, $schedule->{query_id}), "\n";
     }
-    print "# END OF AUTOGEN #\n";
 }
 
 1;

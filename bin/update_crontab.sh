@@ -25,13 +25,19 @@ else
     exit 1
 fi
 
+echo "# AUTOGEN Shib::ShibUI::GenerateCrontab #\n" > $TMP_TARGET
+
 echo "command:" perl -Iextlib/lib/perl5 -Ilib -MShib::ShibUI -MShib::ShibUI::GenerateCrontab \
      -e 'my $config = do $ARGV[0]; local $Shib::ShibUI::CONFIG = $config; Shib::ShibUI::GenerateCrontab->execute();' \
-     $CONFIG > $TMP_TARGET
+     $CONFIG >> $TMP_TARGET
 
 perl -Iextlib/lib/perl5 -Ilib -MShib::ShibUI -MShib::ShibUI::GenerateCrontab \
      -e 'my $config = do $ARGV[0]; local $Shib::ShibUI::CONFIG = $config; Shib::ShibUI::GenerateCrontab->execute();' \
-     $CONFIG > $TMP_TARGET
+     $CONFIG >> $TMP_TARGET
+
+echo "# END OF AUTOGEN #\n" >> $TMP_TARGET
+
+sync; sync; sync
 
 diff -q $TMP_TARGET $TARGET >/dev/null 2>&1
 if [ x"$?" = "x1" ] ; then
