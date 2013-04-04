@@ -880,7 +880,13 @@ get '/schedules/:month' => [qw/user title_sidebar urls/] => sub {
     };
 
     #'SELECT id,query_id,status,schedule,schedule_jp,created_at,created_by FROM schedules WHERE status=1 ORDER BY id'
+    # schedule: '0 10 * * *'
     my $schedules = schedule_build($self->data->valid_schedules);
+    my $hhmm = sub { my ($m,$h) = split(/ /, shift); return sprintf('%02d%02d',$h,$m); };
+    {
+        no warnings 'once';
+        $schedules = sort { $hhmm->($a) <=> $hhmm->($b) } @$schedules;
+    }
     my %dummy_queries;
     @dummy_queries{ map { $_->{query_id} } @$schedules } = ();
     my $query_id_list = [keys %dummy_queries];
