@@ -7,7 +7,14 @@
 <h3><: $show.month_disp :></h3>
 
 <table class="table">
-<thead><tr><th>日付</th><th>時刻</th><th>クエリ</th><th>スケジュール</th><th>所要時間実績</th></tr></thead>
+  <thead>
+    <tr>
+      <th style="width:5em;">日付/時刻</th>
+      <th>クエリ</th>
+      <th style="width:10em;">スケジュール</th>
+      <th style="width:6em;">所要時間実績</th>
+    </tr>
+  </thead>
 <tbody>
 
 : for $schedules -> $sched {
@@ -15,10 +22,9 @@
 <tr>
   : if $sched.date {
   <td><: $sched.date :> <span class="<: $sched.dayofweek :>">(<: $sched.dayofweek :>)</span></td>
-  <td colspan="4" style="text-align:right;">.</td>
+  <td colspan="3" style="text-align:right;">.</td>
   : } else {
-  <td></td>
-  <td><: $sched.time :></td>
+  <td style="text-align:right;"><: $sched.time :></td>
   <td><a href="<: $c.req.uri_for('/query/'~$sched.queryid) :>" target="_blank"><: $sched.description :></a></td>
   <td><: $sched.schedule :></td>
   <td><: $sched.elapse :></td>
