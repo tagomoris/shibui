@@ -31,4 +31,6 @@ fi
 
 source $envfile
 
-[ -f $PERLBREW_BASHRC_PATH ] && source $PERLBREW_BASHRC_PATH
+if [ "x"$PERLBREW_BASHRC_PATH != "x" ]; then
+    [ -f $PERLBREW_BASHRC_PATH ] && source $PERLBREW_BASHRC_PATH
+fi
