@@ -885,7 +885,7 @@ get '/schedules/:month' => [qw/user title_sidebar urls/] => sub {
     my $hhmm = sub { my ($m,$h) = split(/ /, shift); return sprintf('%02d%02d',$h,$m); };
     {
         no warnings 'once';
-        $schedules = sort { $hhmm->($a) <=> $hhmm->($b) } @$schedules;
+        $schedules = [sort { $hhmm->($a->{schedule}) <=> $hhmm->($b->{schedule}) } @$schedules];
     }
     my %dummy_queries;
     @dummy_queries{ map { $_->{query_id} } @$schedules } = ();
