@@ -912,6 +912,9 @@ get '/schedules/:month' => [qw/user title_sidebar urls/] => sub {
             next unless $matched;
 
             my $queryid = $sched->{query_id};
+
+            next unless $query_map{$queryid}->{status};
+
             push $schedule_rows, +{
                 queryid => $queryid,
                 time => $sched->{sched_data}->{t},
