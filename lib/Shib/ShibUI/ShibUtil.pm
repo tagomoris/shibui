@@ -91,6 +91,7 @@ sub execute_query {
         shib_url() . 'execute',
         Content_Type => 'form-data',
         Content      => [
+            scheduled => 'yes',
             querystring => $querystring
         ]
     );
