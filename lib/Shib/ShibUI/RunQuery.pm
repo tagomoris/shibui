@@ -109,7 +109,7 @@ sub execute {
     }
     unless ($shib_query) {
 	my $failed_history_id = $this->data->insert_history(
-	    0, # query_id
+	    $query_id,
 	    '-', # shib_queryid
 	    ($spot ? $offset : -1)# save_offset
 	);
