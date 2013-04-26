@@ -12,6 +12,9 @@ use Furl;
 use Shib::ShibUI::Data;
 use Shib::ShibUI::ShibUtil;
 
+my $SHIB_MAX_TRIES = 3;
+my $SHIB_RETRY_INTERVAL_SECONDS = 30;
+
 my $DATA;
 sub data {
     $DATA ||= Shib::ShibUI::Data->new();
@@ -95,7 +98,26 @@ sub execute {
 
     my $furl = Furl->new(agent => 'Furl Shib::ShibUI::RunQuery (perl)', timeout => 30);
 
-    my $shib_query = Shib::ShibUI::ShibUtil::execute_query($furl, $querystring);
+    my $shib_query;
+    my $tries = 0;
+    while ($tries < $SHIB_MAX_TRIES) {
+	$shib_query = Shib::ShibUI::ShibUtil::execute_query($furl, $querystring);
+	break if $shib_query;
+
+	$tries++;
+	sleep $SHIB_RETRY_INTERVAL_SECONDS;
+    }
+    unless ($tries) {
+	my $failed_history_id = $this->data->insert_history(
+	    0, # query_id
+	    '-', # shib_queryid
+	    ($spot ? $offset : -1)# save_offset
+	);
+	$this->data->update_history($failed_history_id, 'error', Time::Piece->new->mysql_timestamp);
+
+	die "failed to execute query with shib errors.";
+    }
+
     my $shib_queryid = $shib_query->{queryid};
 
     my $save_offset = -1;

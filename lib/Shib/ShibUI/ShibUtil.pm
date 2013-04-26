@@ -98,14 +98,14 @@ sub execute_query {
     my $res = $furl->request($req);
 
     if ($res->status ne '200' or $res->content_type !~ m!^application/json!) {
-        confess "For /execute, shib returns code " . $res->status . " and message:" . $res->body;
-        exit 1;
+        carp "For /execute, shib returns code " . $res->status . " and message:" . $res->body;
+        return undef;
     }
     # say "query json body:", $res->body;
     my $shib_query = JSON::XS::decode_json($res->body);
     if (not defined $shib_query or not defined $shib_query->{queryid}) {
-        confess "shib doesn't return queryid, status " . $res->status . " and message:" . $res->body;
-        exit 1;
+        carp "shib doesn't return queryid, status " . $res->status . " and message:" . $res->body;
+        return undef;
     }
     $shib_query;
 }
