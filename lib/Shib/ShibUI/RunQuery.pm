@@ -102,7 +102,7 @@ sub execute {
     my $tries = 0;
     while ($tries < $SHIB_MAX_TRIES) {
 	$shib_query = Shib::ShibUI::ShibUtil::execute_query($furl, $querystring);
-	break if $shib_query;
+	last if $shib_query;
 
 	$tries++;
 	sleep $SHIB_RETRY_INTERVAL_SECONDS;
