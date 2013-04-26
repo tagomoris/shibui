@@ -107,7 +107,7 @@ sub execute {
 	$tries++;
 	sleep $SHIB_RETRY_INTERVAL_SECONDS;
     }
-    unless ($tries) {
+    unless ($shib_query) {
 	my $failed_history_id = $this->data->insert_history(
 	    0, # query_id
 	    '-', # shib_queryid
