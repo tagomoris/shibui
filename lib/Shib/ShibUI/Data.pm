@@ -243,7 +243,7 @@ sub recent_histories {
 sub waiting_histories {
     my ($self) = @_;
     $self->dbh->select_all(
-        'SELECT id,query_id,shib_query_id,status,started_at,completed_at FROM histories WHERE status=? ORDER BY id',
+        'SELECT id,query_id,shib_query_id,status,offset,started_at,completed_at FROM histories WHERE status=? ORDER BY id',
         'waiting'
     );
 }
