@@ -24,10 +24,12 @@ sub data {
 }
 
 sub process_data {
-    my ($furl, $query, $graphs, $data) = @_;
+    my ($furl, $query, $graphs, $data, $execute_offset) = @_;
 
     my $date_col = $query->{date_field_num};
     my $date_format = $query->{date_format};
+
+    $execute_offset ||= 0;
 
     my @lines = split("\n", $data);
     shift @lines; # cut header line
@@ -39,7 +41,7 @@ sub process_data {
 
         my $time;
         if ($date_col == -1) {
-            $time = scalar(localtime)->strftime($date_format);
+            $time = scalar(localtime) - (ONE_DAY * $execute_offset);
         }
         else {
             try {
@@ -86,7 +88,8 @@ sub execute {
         my $graphs = $this->data->graphs($history->{query_id});
         my $data = Shib::ShibUI::ShibUtil::download_result_tsv($furl, $result->{resultid});
 
-        process_data($furl, $query, $graphs, $data);
+        my $execute_offset = $history->{offset};
+        process_data($furl, $query, $graphs, $data, $execute_offset);
 
         $this->data->update_history(
             $history->{id},
