@@ -317,6 +317,11 @@ $(function(){
 </tr>
 : }
 </table>
+
+最新の結果データ(TSV)取得:
+<pre>
+curl -L <: $c.req.uri_for('/resultdata/'~$query.id) :>
+</pre>
 : }
 
 <form class="xhrpost form-inline" method="POST" action="<: $c.req.uri_for('/run/query/'~$query.id) :>">
