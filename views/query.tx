@@ -280,9 +280,9 @@ $(function(){
     $.ajax({ type: 'POST', url: target.attr('data-uri'),
       success: function(data) {
         if (status) {
-          $(target).closest('.schedule_item').addClass('schedule_disable');
-        } else {
           $(target).closest('.schedule_item').removeClass('schedule_disable');
+        } else {
+          $(target).closest('.schedule_item').addClass('schedule_disable');
         }
       },
       error: function(){}
