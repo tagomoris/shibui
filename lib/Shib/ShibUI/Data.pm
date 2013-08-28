@@ -220,6 +220,14 @@ EOQ
     $results;
 }
 
+sub history_shib_id {
+    my ($self, $query_id, $shib_query_id) = @_;
+    $self->dbh->select_row(
+        'SELECT id,query_id,shib_query_id,status,offset,started_at,completed_at FROM histories WHERE query_id=? AND shib_query_id=? ORDER BY id DESC LIMIT 1',
+        $query_id, $shib_query_id
+    );
+}
+
 sub last_history {
     my ($self, $query_id) = @_;
     $self->dbh->select_row(

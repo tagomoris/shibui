@@ -834,6 +834,21 @@ get '/resultview/:query_id/:history_id' => [qw/user title_sidebar urls/] => sub 
                                   header => $header, data => \@data });
 };
 
+get '/resultdata/:query_id/:shib_query_id' => sub {
+    my ($self, $c) = @_;
+    my $query_id = $c->args->{query_id};
+    my $shib_query_id = $c->args->{shib_query_id};
+
+    my $query = $self->data->query($query_id);
+    $c->halt(404) unless $query;
+    my $history = $self->data->history_shib_id($query_id, $shib_query_id);
+    $c->halt(404) unless $history;
+
+    my $furl = Furl->new(agent => 'Furl Shib::ShibUI::Web (perl)', timeout => 30);
+    my $result = Shib::ShibUI::ShibUtil::get_result($furl, $history->{shib_query_id});
+    $c->redirect(Shib::ShibUI::ShibUtil::url_result_tsv($result->{resultid}));
+};
+
 get '/resultdata/:query_id' => sub {
     my ($self, $c) = @_;
     my $query_id = $c->args->{query_id};
