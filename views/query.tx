@@ -65,7 +65,7 @@ function font_size_change(dif){
   <button class="btn btn-danger <: $query.status ? '' : 'active' :>" id="query_stop">このクエリ実行をすべて停止</button>
 </div>
 : if $query.status {
-<span id="query_stop_alert" style="display: none; mergin-left: 1em; padding-left: 3em; font-weight: bold; color: red;">>個別スケジュールに関わらず全て実行されません</span>
+<span id="query_stop_alert" style="display: none; mergin-left: 1em; padding-left: 3em; font-weight: bold; color: red;">個別スケジュールに関わらず全て実行されません</span>
 : } else {
 <span id="query_stop_alert" style="mergin-left: 1em; padding-left: 3em; font-weight: bold; color: red;">個別スケジュール
 に関わらず全て実行されません</span>
