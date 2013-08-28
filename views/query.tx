@@ -63,7 +63,6 @@ function font_size_change(dif){
 <div class="btn-group" data-toggle="buttons-radio">
   <button class="btn btn-primary <: $query.status ? 'active' : '' :>" id="query_execute">スケジュール通り実行</button>
   <button class="btn btn-danger <: $query.status ? '' : 'active' :>" id="query_stop">このクエリ実行をすべて停止</button>
-  <span id="query_stop_alert" style="<: $query.status ? '' : 'display: none;' :> padding-left: 3em; font-weight: bold; font-color: red;">個別スケジュールに関わらず全て実行されません</span>
 </div>
 : if $query.status {
 <span id="query_stop_alert" style="display: none; mergin-left: 1em; padding-left: 3em; font-weight: bold; color: red;">>個別スケジュールに関わらず全て実行されません</span>
