@@ -63,6 +63,7 @@ function font_size_change(dif){
 <div class="btn-group" data-toggle="buttons-radio">
   <button class="btn btn-primary <: $query.status ? 'active' : '' :>" id="query_execute">スケジュール通り実行</button>
   <button class="btn btn-danger <: $query.status ? '' : 'active' :>" id="query_stop">このクエリ実行をすべて停止</button>
+  <span id="query_stop_alert" style="<: $query.status ? '' : 'display: none;' :> padding-left: 3em; font-weight: bold; font-color: red;">個別スケジュールに関わらず全て実行されません</span>
 </div>
 <input id="silent_submit" type="hidden" value="0" name="silent" />
 <input id="status_checkbox" type="hidden" value="<: $query.status :>" name="status" />
@@ -73,6 +74,11 @@ $(function(){
     $('input#status_checkbox').val(state);
     $('#silent_submit').val('1');
     $('#query_status_toggle').closest('form').submit();
+    if (state === 1) {
+      $('#query_stop_alert').hide();
+    } else {
+      $('#query_stop_alert').show();
+    }
   });
 });
 </script>
@@ -246,12 +252,12 @@ $(function(){
   <thead><tr><th>実行スケジュール</th><th>状態</th><th></th></tr></thead>
   <tbody>
   : for $schedules -> $schedule {
-  <tr>
+  <tr class="schedule_item <: $schedule.status ? '' : 'schedule_disable' :>">
     <td style="vertical-align: center;"><: $schedule.schedule_jp :></td>
     <td>
       <div class="btn-group" data-toggle="buttons-radio">
-        <button class="schedule_execute btn btn-small btn-info <: $schedule.status ? 'active' : '' :>" data-uri="<: $c.req.uri_for('/toggle/schedule/'~$schedule.id) :>">有効</button>
-        <button class="schedule_stop btn btn-small btn-warning <: $schedule.status ? '' : 'active' :>" data-uri="<: $c.req.uri_for('/toggle/schedule/'~$schedule.id) :>">停止</button>
+        <button class="schedule_execute btn btn-small btn-info <: $schedule.status ? 'active' : '' :>" data-uri="<: $c.req.uri_for('/toggle/schedule/'~$schedule.id) :>" onClick="$(this).closest('.schedule_item').removeClass('schedule_disable')">有効</button>
+        <button class="schedule_stop btn btn-small btn-warning <: $schedule.status ? '' : 'active' :>" data-uri="<: $c.req.uri_for('/toggle/schedule/'~$schedule.id) :>" onClick="$(this).closest('.schedule_item').removeClass('schedule_disable')">停止</button>
       </div>
     </td>
     <td>
@@ -321,6 +327,10 @@ $(function(){
 最新の結果データ(TSV)取得:
 <pre>
 curl -L <: $c.req.uri_for('/resultdata/'~$query.id) :>
+</pre>
+特定の実行結果(shib query id指定):
+<pre>
+curl -L <: $c.req.uri_for('/resultdata/'~$query.id~'/'~$histories[0].shib_query_id) :>
 </pre>
 : }
 

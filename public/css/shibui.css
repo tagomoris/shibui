@@ -11,6 +11,10 @@
     line-height: 1.2;
 }
 
+.schedule_disable {
+    background-color: #afafaf;
+}
+
 .changed {
     background-color: #eeeeff;
 }
