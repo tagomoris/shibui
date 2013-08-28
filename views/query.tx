@@ -65,6 +65,12 @@ function font_size_change(dif){
   <button class="btn btn-danger <: $query.status ? '' : 'active' :>" id="query_stop">このクエリ実行をすべて停止</button>
   <span id="query_stop_alert" style="<: $query.status ? '' : 'display: none;' :> padding-left: 3em; font-weight: bold; font-color: red;">個別スケジュールに関わらず全て実行されません</span>
 </div>
+: if $query.status {
+<span id="query_stop_alert" style="display: none; mergin-left: 1em; padding-left: 3em; font-weight: bold; color: red;">>個別スケジュールに関わらず全て実行されません</span>
+: } else {
+<span id="query_stop_alert" style="mergin-left: 1em; padding-left: 3em; font-weight: bold; color: red;">個別スケジュール
+に関わらず全て実行されません</span>
+: }
 <input id="silent_submit" type="hidden" value="0" name="silent" />
 <input id="status_checkbox" type="hidden" value="<: $query.status :>" name="status" />
 <script>
@@ -256,8 +262,8 @@ $(function(){
     <td style="vertical-align: center;"><: $schedule.schedule_jp :></td>
     <td>
       <div class="btn-group" data-toggle="buttons-radio">
-        <button class="schedule_execute btn btn-small btn-info <: $schedule.status ? 'active' : '' :>" data-uri="<: $c.req.uri_for('/toggle/schedule/'~$schedule.id) :>" onClick="$(this).closest('.schedule_item').removeClass('schedule_disable')">有効</button>
-        <button class="schedule_stop btn btn-small btn-warning <: $schedule.status ? '' : 'active' :>" data-uri="<: $c.req.uri_for('/toggle/schedule/'~$schedule.id) :>" onClick="$(this).closest('.schedule_item').removeClass('schedule_disable')">停止</button>
+        <button class="schedule_execute btn btn-small btn-info <: $schedule.status ? 'active' : '' :>" data-uri="<: $c.req.uri_for('/toggle/schedule/'~$schedule.id) :>">有効</button>
+        <button class="schedule_stop btn btn-small btn-warning <: $schedule.status ? '' : 'active' :>" data-uri="<: $c.req.uri_for('/toggle/schedule/'~$schedule.id) :>">停止</button>
       </div>
     </td>
     <td>
@@ -271,21 +277,16 @@ $(function(){
   $('.schedule_execute,.schedule_stop').click(function(event){
     var target = $(event.target);
     if (target.hasClass('active')) { return false; }
+    var status = target.hasClass('schedule_execute');
     $.ajax({ type: 'POST', url: target.attr('data-uri'),
       success: function(data) {
-        $(myform).find('.alert-error').hide();
-        if ( data.error !== 0 ) {
-          $.each(data.messages, function (param,message) {
-            var helpblock = $('<p class="validator_message help-block"></p>');
-            helpblock.text(message);
-            $(myform).find('[name="'+param+'"]').parents('div.controls').first().append(helpblock);
-            $(myform).find('[name="'+param+'"]').parents('div.control-group').first().addClass('error');
-          });
+        if (status) {
+          $(target).closest('.schedule_item').addClass('schedule_disable');
+        } else {
+          $(target).closest('.schedule_item').removeClass('schedule_disable');
         }
       },
-      error: function() {
-        $(myform).find('.alert-error').show();
-      }
+      error: function(){}
     });
     return true;
   });
