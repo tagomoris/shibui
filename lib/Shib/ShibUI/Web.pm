@@ -146,7 +146,11 @@ get '/docs' => [qw/user title_sidebar urls/] => sub {
 
 get '/register' => [qw/user title_sidebar urls/] => sub {
     my ($self, $c) = @_;
-    $c->render('register.tx');
+    my $service_name = '';
+    if ($c->req->param('s')) {
+        $service_name = $c->req->param('s');
+    }
+    $c->render('register.tx', {service_name => $service_name});
 };
 
 post '/register' => [qw/user/] => sub {

@@ -1,5 +1,8 @@
 : cascade base
 : around content -> {
+<h2>クエリ追加</h2>
+<a href="<: $c.req.uri_for('/register') :>?s=<: $service :>">このサービスにクエリを追加する</a>
+
 <h2>クエリ一覧: <: $service :></h2>
 
 : for $queries -> $query {

@@ -35,7 +35,7 @@ function font_size_change(dif){
 <div class="control-group">
 <label class="control-label" style="font-size: large; font-weight: bold;">サービス名</label>
 <div class="controls">
-<input type="text" placeholder="サービス名" name="service" style="width: 50%; margin-left: 20px;" />
+<input type="text" placeholder="サービス名" name="service" style="width: 50%; margin-left: 20px;" value="<: $service_name :>" />
 <p class="help-block">クエリの __SERVICE__ に置き換えられます(入力必須)</p>
 </div>
 </div>
