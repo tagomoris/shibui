@@ -84,5 +84,5 @@ CREATE TABLE IF NOT EXISTS oneshots (
   started_at    TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   completed_at  TIMESTAMP     NOT NULL DEFAULT '0000-00-00 00:00:00',
   created_by    VARCHAR(1024) NOT NULL,
-  KEY username_search (created_by, id)
+  KEY username_search (created_by(255), id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
