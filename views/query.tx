@@ -332,6 +332,14 @@ curl -L <: $c.req.uri_for('/resultdata/'~$query.id) :>
 <pre>
 curl -L <: $c.req.uri_for('/resultdata/'~$query.id~'/'~$histories[0].shib_query_id) :>
 </pre>
+
+またレスポンスヘッダに以下のような情報が含まれています。
+<pre>
+ X-Shib-Query-ID: 88e3f054f0beba518079af800ed9a6ba   (md5hex)
+ X-Shib-Result-ID: 7595059c86a1ad9e241d8d73507d3786   (md5hex)
+ X-Shib-Executed-At: 1387187040166    (milliseconds from epoch)
+ X-Shib-Completed-At: 1387187057935    (milliseconds from epoch)
+</pre>
 : }
 
 <form class="xhrpost form-inline" method="POST" action="<: $c.req.uri_for('/run/query/'~$query.id) :>">
