@@ -439,6 +439,15 @@ get '/query/:query_id' => [qw/user title_sidebar urls/] => sub {
     });
 };
 
+get '/query_json/:query_id' => sub {
+    my ($self, $c) = @_;
+    my $query_id = $c->args->{query_id};
+    my $query = $self->data->query($query_id);
+
+    $c->halt(404) unless $query;
+    $c->render_json($query);
+};
+
 post '/update/query/:query_id' => [qw/user/] => sub {
     my ($self, $c) = @_;
     my $query_id = $c->args->{query_id};
