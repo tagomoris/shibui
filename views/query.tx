@@ -350,6 +350,11 @@ curl -L <: $c.req.uri_for('/resultdata/'~$query.id~'/'~$histories[0].shib_query_
   </fieldset>
 </form>
 
+クエリ情報JSON取得:
+<pre>
+curl -L <: $c.req.uri_for('/query_json/'~$query.id) :>
+</pre>
+
 : } # can_run
 
 : } # around content
