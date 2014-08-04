@@ -4,9 +4,7 @@ CREATE TABLE IF NOT EXISTS queries (
   status         SMALLINT      NOT NULL DEFAULT 1,
   query          TEXT          NOT NULL,
   created_at     TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  created_by     VARCHAR(1024) NOT NULL,
   modified_at    TIMESTAMP     NOT NULL DEFAULT '0000-00-00 00:00:00',
-  modified_by    VARCHAR(1024) NOT NULL,
   description    VARCHAR(256)  DEFAULT NULL,
   date_field_num SMALLINT      DEFAULT 0,
   date_format    VARCHAR(32)   DEFAULT NULL,
@@ -31,7 +29,6 @@ CREATE TABLE IF NOT EXISTS schedules (
   schedule        VARCHAR(128)  NOT NULL, -- crontab like format for DateTime::Event::Cron
   schedule_jp     VARCHAR(128)  NOT NULL,
   created_at      TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  created_by      VARCHAR(1024) NOT NULL,
   KEY schedule_query_search (query_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -46,11 +43,11 @@ CREATE TABLE IF NOT EXISTS histories (
   KEY history_query_search (query_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
+-- deleeeeeeeeeeeeeeet
 CREATE TABLE IF NOT EXISTS readers (
   id         INT           NOT NULL PRIMARY KEY AUTO_INCREMENT,
   query_id   INT           NOT NULL,
   created_at TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  created_by VARCHAR(1024) NOT NULL,
   KEY reader_query_search (query_id, created_at DESC)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -63,7 +60,6 @@ CREATE TABLE IF NOT EXISTS views (
   hr_section   VARCHAR(32)   NOT NULL,
   hr_graphname VARCHAR(32)   NOT NULL,
   created_at   TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  created_by   VARCHAR(1024) NOT NULL,
   KEY view_service_search (service)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
@@ -83,6 +79,5 @@ CREATE TABLE IF NOT EXISTS oneshots (
   offset        INT           DEFAULT NULL,
   started_at    TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
   completed_at  TIMESTAMP     NOT NULL DEFAULT '0000-00-00 00:00:00',
-  created_by    VARCHAR(1024) NOT NULL,
   KEY username_search (created_by(255), id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

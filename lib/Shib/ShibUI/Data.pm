@@ -33,11 +33,11 @@ sub service_list {
 }
 
 sub register_query {
-    my ($self, $username, $service, $query) = @_;
+    my ($self, $service, $query) = @_;
     my $dbh = $self->dbh;
     $dbh->query(
-        'INSERT INTO queries (service,query,created_at,created_by,modified_at,modified_by) VALUES (?,?,NOW(),?,NOW(),?)',
-        $service, $query, $username, $username
+        'INSERT INTO queries (service,query,created_at,modified_at) VALUES (?,?,NOW(),NOW())',
+        $service, $query,
     );
     $self->dbh->last_insert_id;
 }
@@ -45,26 +45,26 @@ sub register_query {
 sub query {
     my ($self, $query_id) = @_;
     my $query = <<"EOQ";
-SELECT id,service,status,query,created_at,created_by,modified_at,modified_by,description,date_field_num,date_format
+SELECT id,service,status,query,created_at,modified_at,description,date_field_num,date_format
 FROM queries WHERE id=?
 EOQ
     $self->dbh->select_row($query, $query_id);
 }
 
 sub update_query {
-    my ($self, $username, $query_id, $query, $status, $description, $date_field_num, $date_format) = @_;
+    my ($self, $query_id, $query, $status, $description, $date_field_num, $date_format) = @_;
     my $sql = <<"EOQ";
-UPDATE queries SET status=?, query=?, description=?, date_field_num=?, date_format=?, modified_at=NOW(), modified_by=?
+UPDATE queries SET status=?, query=?, description=?, date_field_num=?, date_format=?, modified_at=NOW()
 WHERE id=?
 EOQ
-    $self->dbh->query($sql, $status, $query, $description, $date_field_num, $date_format, $username, $query_id);
+    $self->dbh->query($sql, $status, $query, $description, $date_field_num, $date_format, $query_id);
     1;
 }
 
 sub queries {
     my ($self, $service) = @_;
     my $query = <<"EOQ";
-SELECT id,service,status,query,created_at,created_by,modified_at,modified_by,description,date_field_num,date_format
+SELECT id,service,status,query,created_at,modified_at,description,date_field_num,date_format
 FROM queries WHERE service=? ORDER BY status DESC, id DESC
 EOQ
     $self->dbh->select_all($query, $service);
@@ -73,7 +73,7 @@ EOQ
 sub query_list {
     my ($self, $query_id_list) = @_;
     my $query = <<"EOQ";
-SELECT id,service,status,query,created_at,created_by,modified_at,modified_by,description,date_field_num,date_format
+SELECT id,service,status,query,created_at,modified_at,description,date_field_num,date_format
 FROM queries WHERE id IN (?)
 EOQ
     $self->dbh->select_all($query, $query_id_list);
@@ -114,7 +114,7 @@ sub graphs {
 }
 
 sub add_graph {
-    my ($self, $username, $query_id, $label, $value_field_num, $hr_service, $hr_section, $hr_graphname) = @_;
+    my ($self, $query_id, $label, $value_field_num, $hr_service, $hr_section, $hr_graphname) = @_;
     my $dbh = $self->dbh;
     $dbh->query(
         'INSERT INTO graphs (query_id,label,value_field_num,hr_service,hr_section,hr_graphname) VALUES (?,?,?,?,?,?)',
@@ -132,7 +132,7 @@ sub delete_graph {
 sub schedule {
     my ($self, $schedule_id) = @_;
     $self->dbh->select_row(
-        'SELECT id,query_id,status,schedule,schedule_jp,created_at,created_by FROM schedules WHERE id=?',
+        'SELECT id,query_id,status,schedule,schedule_jp,created_at FROM schedules WHERE id=?',
         $schedule_id
     );
 }
@@ -140,7 +140,7 @@ sub schedule {
 sub schedules {
     my ($self, $query_id) = @_;
     $self->dbh->select_all(
-        'SELECT id,query_id,status,schedule,schedule_jp,created_at,created_by FROM schedules WHERE query_id=? ORDER BY id',
+        'SELECT id,query_id,status,schedule,schedule_jp,created_at FROM schedules WHERE query_id=? ORDER BY id',
         $query_id
     );
 }
@@ -148,16 +148,16 @@ sub schedules {
 sub valid_schedules {
     my ($self) = @_;
     $self->dbh->select_all(
-        'SELECT id,query_id,status,schedule,schedule_jp,created_at,created_by FROM schedules WHERE status=1 ORDER BY id'
+        'SELECT id,query_id,status,schedule,schedule_jp,created_at FROM schedules WHERE status=1 ORDER BY id'
     );
 }
 
 sub add_schedule {
-    my ($self, $username, $query_id, $schedule, $schedule_jp) = @_;
+    my ($self, $query_id, $schedule, $schedule_jp) = @_;
     my $dbh = $self->dbh;
     $dbh->query(
-        'INSERT INTO schedules (query_id,status,schedule,schedule_jp,created_by) VALUES (?,0,?,?,?)',
-        $query_id, $schedule, $schedule_jp, $username
+        'INSERT INTO schedules (query_id,status,schedule,schedule_jp) VALUES (?,0,?,?)',
+        $query_id, $schedule, $schedule_jp
     );
     $dbh->last_insert_id;
 }
@@ -281,7 +281,7 @@ sub update_history {
 sub views {
     my ($self, $service) = @_;
     my $query = <<EOQ;
-SELECT id,service,label,complex,hr_service,hr_section,hr_graphname,created_at,created_by
+SELECT id,service,label,complex,hr_service,hr_section,hr_graphname,created_at
         FROM views WHERE service=? ORDER BY complex DESC, id DESC
 EOQ
     $self->dbh->select_all($query, $service);
@@ -290,7 +290,7 @@ EOQ
 sub view {
     my ($self, $view_id) = @_;
     $self->dbh->select_row(
-        'SELECT id,service,label,complex,hr_service,hr_section,hr_graphname,created_at,created_by FROM views WHERE id=?',
+        'SELECT id,service,label,complex,hr_service,hr_section,hr_graphname,created_at FROM views WHERE id=?',
         $view_id
     );
 }
@@ -298,18 +298,18 @@ sub view {
 sub search_view {
     my ($self, $complex, $hr_service, $hr_section, $hr_graphname) = @_;
     my $query = <<EOQ;
-SELECT id,service,label,complex,hr_service,hr_section,hr_graphname,created_at,created_by
+SELECT id,service,label,complex,hr_service,hr_section,hr_graphname,created_at
 FROM views WHERE complex=? AND hr_service=? AND hr_section=? AND hr_graphname=?
 EOQ
     $self->dbh->select_row($query, $complex, $hr_service, $hr_section, $hr_graphname);
 }
 
 sub add_view {
-    my ($self, $username, $service, $label, $complex, $hr_service, $hr_section, $hr_graphname) = @_;
+    my ($self, $service, $label, $complex, $hr_service, $hr_section, $hr_graphname) = @_;
     my $dbh = $self->dbh;
     $dbh->query(
-        'INSERT INTO views (service,label,complex,hr_service,hr_section,hr_graphname,created_by) VALUES (?,?,?,?,?,?,?)',
-        $service, $label, $complex, $hr_service, $hr_section, $hr_graphname, $username
+        'INSERT INTO views (service,label,complex,hr_service,hr_section,hr_graphname) VALUES (?,?,?,?,?,?)',
+        $service, $label, $complex, $hr_service, $hr_section, $hr_graphname
     );
     $dbh->last_insert_id;
 }
@@ -352,38 +352,21 @@ sub delete_componnet {
     1;
 }
 
-sub add_readers {
-    my ($self, $username, $query_id) = @_;
-    my $dbh = $self->dbh;
-    $dbh->query('INSERT INTO readers (query_id,created_by) VALUES (?,?)', $query_id, $username);
-    $dbh->last_insert_id;
-}
-
 sub recent_oneshots {
-    my ($self, $username) = @_;
+    my ($self) = @_;
     my $sql = <<EOSQL;
 SELECT
- id,query,form_items,shib_query_id,status,started_at,completed_at,created_by
+ id,query,form_items,shib_query_id,status,started_at,completed_at
 FROM oneshots
 ORDER BY id DESC LIMIT 20
 EOSQL
-    my @params = ();
-    if ($username) {
-        $sql = <<EOSQL;
-SELECT
- id,query,form_items,shib_query_id,status,started_at,completed_at,created_by
-FROM oneshots WHERE created_by=?
-ORDER BY id DESC LIMIT 10
-EOSQL
-        @params = ($username);
-    }
-    $self->dbh->select_all($sql, @params);
+    $self->dbh->select_all($sql);
 }
 
 sub waiting_oneshots {
     my ($self) = @_;
     $self->dbh->select_all(
-        'SELECT id,query,form_items,shib_query_id,status,started_at,completed_at,created_by FROM oneshots WHERE status=?',
+        'SELECT id,query,form_items,shib_query_id,status,started_at,completed_at FROM oneshots WHERE status=?',
         'waiting'
     );
 }
@@ -392,19 +375,19 @@ sub oneshot {
     my ($self, $oneshot_id) = @_;
     my $sql = <<EOSQL;
 SELECT
- id,query,form_items,shib_query_id,status,started_at,completed_at,created_by
+ id,query,form_items,shib_query_id,status,started_at,completed_at
 FROM oneshots WHERE id=?
 EOSQL
     $self->dbh->select_row($sql, $oneshot_id);
 }
 
 sub add_oneshot {
-    my ($self, $username, $query, $form_items, $shib_query_id, $offset) = @_;
+    my ($self, $query, $form_items, $shib_query_id, $offset) = @_;
     my $sql = <<EOSQL;
-INSERT INTO oneshots (query,form_items,shib_query_id,status,offset,created_by) VALUES (?,?,?,?,?,?)
+INSERT INTO oneshots (query,form_items,shib_query_id,status,offset) VALUES (?,?,?,?,?)
 EOSQL
     my $dbh = $self->dbh;
-    $dbh->query($sql, $query, $form_items, $shib_query_id, 'waiting', $offset, $username);
+    $dbh->query($sql, $query, $form_items, $shib_query_id, 'waiting', $offset);
     $dbh->last_insert_id;
 }
 

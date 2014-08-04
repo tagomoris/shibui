@@ -37,11 +37,6 @@ sub data {
     $self->{__data};
 }
 
-sub mark {
-    my ($self, $username, $query_id) = @_;
-    $self->data->add_readers($username, $query_id);
-}
-
 use Net::Hadoop::Hive::QueryBuilder;
 sub query_builder {
     Net::Hadoop::Hive::QueryBuilder->new(
@@ -84,25 +79,9 @@ filter 'oneshots_sidebar' => sub {
         my ($self, $c) = @_;
         $c->stash->{site_name} = 'ShibUI';
         $c->stash->{sidebar} = {
-            oneshot_users => {name => '自分の履歴 (max 10)', items => $self->data->recent_oneshots($c->stash->{username})},
             oneshot_all => {name => '全体の履歴 (max 20)', items => $self->data->recent_oneshots()},
         };
         $app->($self,$c);
-    }
-};
-
-filter 'user' => sub {
-    my $app = shift;
-    sub {
-        my ($self, $c) = @_;
-        my $username = $c->req->header('X-Forwarded-User');
-        if (not $username and $ENV{PLACK_ENV} ne 'production') {
-            $username = 'dareka';
-        }
-        warnf "missing header X-Forwarded-User" unless $username;
-        $c->halt(403) unless $username;
-        $c->stash->{username} = $username;
-        $app->($self, $c);
     }
 };
 
@@ -127,24 +106,24 @@ sub set_sidebar_active {
         }
     }
     elsif ($type eq 'oneshot') {
-        foreach my $item (@{$sidebar->{oneshot_users}->{items}}, @{$sidebar->{oneshot_all}->{items}}) {
+        foreach my $item (@{$sidebar->{oneshot_all}->{items}}) {
             next if $item->{id} != $value;
             $item->{active} = 1;
         }
     }
 }
 
-get '/' => [qw/user title_sidebar urls/] => sub {
+get '/' => [qw/title_sidebar urls/] => sub {
     my ($self, $c) = @_;
     $c->render(custom_view('index') || 'index.tx');
 };
 
-get '/docs' => [qw/user title_sidebar urls/] => sub {
+get '/docs' => [qw/title_sidebar urls/] => sub {
     my ($self, $c) = @_;
     $c->render(custom_view('docs') || 'docs.tx');
 };
 
-get '/register' => [qw/user title_sidebar urls/] => sub {
+get '/register' => [qw/title_sidebar urls/] => sub {
     my ($self, $c) = @_;
     my $service_name = '';
     if ($c->req->param('s')) {
@@ -153,7 +132,7 @@ get '/register' => [qw/user title_sidebar urls/] => sub {
     $c->render('register.tx', {service_name => $service_name});
 };
 
-post '/register' => [qw/user/] => sub {
+post '/register' => sub {
     my ($self, $c) = @_;
     my $service = $c->req->param('service');
     my $query = $c->req->param('query');
@@ -178,7 +157,6 @@ post '/register' => [qw/user/] => sub {
     }
 
     my $inserted_id = $self->data->register_query(
-        $c->stash->{username},
         $service,
         $query,
     );
@@ -188,12 +166,12 @@ post '/register' => [qw/user/] => sub {
     });
 };
 
-get '/query_builder' => [qw/user title_sidebar oneshots_sidebar urls/] => sub {
+get '/query_builder' => [qw/title_sidebar oneshots_sidebar urls/] => sub {
     my ($self, $c) = @_;
     $c->render('query_builder.tx', {saved => 0});
 };
 
-post '/query_builder/build' => [qw/user oneshots_sidebar/] => sub {
+post '/query_builder/build' => [qw/oneshots_sidebar/] => sub {
     my ($self, $c) = @_;
 
     my $sexpression = Shib::ShibUI::QueryUtil::build_sexpression($c->req->body_parameters);
@@ -206,7 +184,7 @@ post '/query_builder/build' => [qw/user oneshots_sidebar/] => sub {
     });
 };
 
-post '/query_builder/kill/:id' => [qw/user/] => sub {
+post '/query_builder/kill/:id' => sub {
     my ($self, $c) = @_;
     my $furl = Furl->new(agent => 'Furl Shib::ShibUI::Web (perl)', timeout => 30);
 
@@ -222,7 +200,7 @@ post '/query_builder/kill/:id' => [qw/user/] => sub {
     });
 };
 
-post '/query_builder/run' => [qw/user oneshots_sidebar/] => sub {
+post '/query_builder/run' => [qw/oneshots_sidebar/] => sub {
     my ($self, $c) = @_;
     my $result = $c->req->validator([
         query => { rule => [ ['NOT_NULL', 'クエリがありません'], ], },
@@ -257,7 +235,6 @@ post '/query_builder/run' => [qw/user oneshots_sidebar/] => sub {
     return $c->render_json({error => JSON::XS::true, message => $err}) if $err;
 
     my $oneshot_id = $self->data->add_oneshot(
-        $c->stash->{username},
         $query_string, $form_items_json, $shib_query_id, $offset
     );
     $c->render_json({
@@ -266,7 +243,7 @@ post '/query_builder/run' => [qw/user oneshots_sidebar/] => sub {
     });
 };
 
-get '/query_builder/show/:id' => [qw/user oneshots_sidebar urls/] => sub {
+get '/query_builder/show/:id' => [qw/oneshots_sidebar urls/] => sub {
     my ($self, $c) = @_;
 
     my $furl = Furl->new(agent => 'Furl Shib::ShibUI::Web (perl)', timeout => 30);
@@ -316,7 +293,7 @@ get '/query_builder/show/:id' => [qw/user oneshots_sidebar urls/] => sub {
     $c->render('oneshot.tx', {oneshot => $oneshot, header => $header, data => $data, resultid => $resultid});
 };
 
-get '/query_builder/edit/:id' => [qw/user oneshots_sidebar urls/] => sub {
+get '/query_builder/edit/:id' => [qw/oneshots_sidebar urls/] => sub {
     my ($self, $c) = @_;
 
     my $oneshot = $self->data->oneshot($c->args->{id});
@@ -350,13 +327,13 @@ get '/query_builder/edit/:id' => [qw/user oneshots_sidebar urls/] => sub {
     $c->render('query_builder.tx', {saved => 1, oneshot => $oneshot, conditions => \@conditions, results => \@results});
 };
 
-get '/register_view' => [qw/user title_sidebar urls/] => sub {
+get '/register_view' => [qw/title_sidebar urls/] => sub {
     my ($self, $c) = @_;
     my $services = $self->data->service_list;
     $c->render('register_view.tx', { services => $services });
 };
 
-post '/register_view' => [qw/user/] => sub {
+post '/register_view' => sub {
     my ($self, $c) = @_;
     my $furl = Furl->new(agent => 'Furl Shib::ShibUI::Web (perl)', timeout => 30);
 
@@ -391,7 +368,6 @@ post '/register_view' => [qw/user/] => sub {
         }
     }
     my $inserted_id = $self->data->add_view(
-        $c->stash->{username},
         $c->req->param('service'), $c->req->param('label'), $complex,
         $hr_service, $hr_section, $hr_graphname,
     );
@@ -404,7 +380,7 @@ post '/register_view' => [qw/user/] => sub {
     });
 };
 
-get '/queries/:servicename' => [qw/user title_sidebar urls/] => sub {
+get '/queries/:servicename' => [qw/title_sidebar urls/] => sub {
     my ($self, $c) = @_;
     my $servicename = $c->args->{servicename};
 
@@ -412,7 +388,7 @@ get '/queries/:servicename' => [qw/user title_sidebar urls/] => sub {
     $c->render('queries.tx', { service => $servicename, queries => $self->data->queries($servicename) });
 };
 
-get '/query/:query_id' => [qw/user title_sidebar urls/] => sub {
+get '/query/:query_id' => [qw/title_sidebar urls/] => sub {
     my ($self, $c) = @_;
     my $query_id = $c->args->{query_id};
     my $query = $self->data->query($query_id);
@@ -448,7 +424,7 @@ get '/query_json/:query_id' => sub {
     $c->render_json($query);
 };
 
-post '/update/query/:query_id' => [qw/user/] => sub {
+post '/update/query/:query_id' => sub {
     my ($self, $c) = @_;
     my $query_id = $c->args->{query_id};
     my $query = $self->data->query($query_id);
@@ -500,9 +476,8 @@ post '/update/query/:query_id' => [qw/user/] => sub {
 
     #my $query_text = $c->req->param('query');
     #chomp $query_text;
-    # my ($self, $username, $query_id, $query, $status, $description, $date_field_num, $date_format) = @_;
+    # my ($self, $query_id, $query, $status, $description, $date_field_num, $date_format) = @_;
     $self->data->update_query(
-        $c->stash->{username},
         $query_id,
         $c->req->param('query'), $c->req->param('status'), $c->req->param('description'),
         $c->req->param('date_field_num'), $c->req->param('date_format'),
@@ -513,7 +488,7 @@ post '/update/query/:query_id' => [qw/user/] => sub {
     });
 };
 
-post '/delete/query/:query_id' => [qw/user/] => sub {
+post '/delete/query/:query_id' => sub {
     my ($self, $c) = @_;
     my $query_id = $c->args->{query_id};
     my $query = $self->data->query($query_id);
@@ -527,7 +502,7 @@ post '/delete/query/:query_id' => [qw/user/] => sub {
     });
 };
 
-post '/run/query/:query_id' => [qw/user/] => sub {
+post '/run/query/:query_id' => sub {
     my ($self, $c) = @_;
     my $query_id = $c->args->{query_id};
     my $query = $self->data->query($query_id);
@@ -557,7 +532,7 @@ post '/run/query/:query_id' => [qw/user/] => sub {
     });
 };
 
-post '/add/graph/:query_id' => [qw/user/] => sub {
+post '/add/graph/:query_id' => sub {
     my ($self, $c) = @_;
     my $query_id = $c->args->{query_id};
     my $query = $self->data->query($query_id);
@@ -604,14 +579,12 @@ post '/add/graph/:query_id' => [qw/user/] => sub {
     my $hr_graphname = $c->req->param('hr_graphname');
 
     $self->data->add_graph(
-        $c->stash->{username},
         $query_id, $label, $c->req->param('value_field_num'),
         $hr_service, $hr_section, $hr_graphname,
     );
 
     my $view = $self->data->search_view(0, $hr_service, $hr_section, $hr_graphname);
     my $view_id = $view ? $view->{id} : $self->data->add_view(
-        $c->stash->{username},
         $query->{service}, $query->{description} . ':' . $label,  0, $hr_service, $hr_section, $hr_graphname,
     );
 
@@ -624,7 +597,7 @@ post '/add/graph/:query_id' => [qw/user/] => sub {
     });
 };
 
-post '/delete/graph/:graph_id' => [qw/user/] => sub {
+post '/delete/graph/:graph_id' => sub {
     my ($self, $c) = @_;
     my $graph_id = $c->args->{graph_id};
     my $graph = $self->data->graph($graph_id);
@@ -641,7 +614,7 @@ post '/delete/graph/:graph_id' => [qw/user/] => sub {
 
 my $dow_map = { Sun => 0, Mon => 1, Tue => 2, Wed => 3, Thu => 4, Fri => 5, Sat => 6 };
 my $dowjp = [ '日曜', '月曜', '火曜', '水曜', '木曜', '金曜', '土曜' ];
-post '/add/schedule/:query_id' => [qw/user/] => sub {
+post '/add/schedule/:query_id' => sub {
     my ($self, $c) = @_;
     my $query_id = $c->args->{query_id};
     my $query = $self->data->query($query_id);
@@ -690,14 +663,14 @@ post '/add/schedule/:query_id' => [qw/user/] => sub {
         return $res;
     }
 
-    $self->data->add_schedule($c->stash->{username}, $query_id, $schedule, $schedule_jp);
+    $self->data->add_schedule($query_id, $schedule, $schedule_jp);
     $c->render_json({
         error => 0,
         location => $c->req->uri_for('/query/' . $query_id)->as_string,
     });
 };
 
-post '/toggle/schedule/:schedule_id' => [qw/user/] => sub {
+post '/toggle/schedule/:schedule_id' => sub {
     my ($self, $c) = @_;
     my $schedule_id = $c->args->{schedule_id};
     my $schedule = $self->data->schedule($schedule_id);
@@ -711,7 +684,7 @@ post '/toggle/schedule/:schedule_id' => [qw/user/] => sub {
     });
 };
 
-post '/delete/schedule/:schedule_id' => [qw/user/] => sub {
+post '/delete/schedule/:schedule_id' => sub {
     my ($self, $c) = @_;
     my $schedule_id = $c->args->{schedule_id};
     my $schedule = $self->data->schedule($schedule_id);
@@ -725,7 +698,7 @@ post '/delete/schedule/:schedule_id' => [qw/user/] => sub {
     });
 };
 
-get '/views/:servicename' => [qw/user title_sidebar urls/] => sub {
+get '/views/:servicename' => [qw/title_sidebar urls/] => sub {
     my ($self, $c) = @_;
     my $servicename = $c->args->{servicename};
 
@@ -743,7 +716,7 @@ get '/views/:servicename' => [qw/user title_sidebar urls/] => sub {
     $c->render('views.tx', { service => $servicename, views => $views });
 };
 
-get '/view/:view_id' => [qw/user title_sidebar urls/] => sub {
+get '/view/:view_id' => [qw/title_sidebar urls/] => sub {
     my ($self, $c) = @_;
     my $view_id = $c->args->{view_id};
     my $view = $self->data->view($view_id);
@@ -771,7 +744,7 @@ get '/view/:view_id' => [qw/user title_sidebar urls/] => sub {
     $c->render('view.tx', { view => $view, queries => $queries });
 };
 
-get '/view/:type/:service/:section/:name' => [qw/user title_sidebar urls/] => sub {
+get '/view/:type/:service/:section/:name' => [qw/title_sidebar urls/] => sub {
     my ($self, $c) = @_;
     my ($type,$hr_service,$hr_section,$hr_graphname) = ($c->args->{type}, $c->args->{service}, $c->args->{section}, $c->args->{name});
     my $complex = $type eq 'c' ? 1 : 0;
@@ -800,7 +773,7 @@ get '/view/:type/:service/:section/:name' => [qw/user title_sidebar urls/] => su
     $c->render('view.tx', { view => $view, queries => $queries });
 };
 
-post '/delete/view/:view_id' => [qw/user/] => sub {
+post '/delete/view/:view_id' => sub {
     my ($self, $c) = @_;
     my $view_id = $c->args->{view_id};
     my $view = $self->data->view($view_id);
@@ -814,7 +787,7 @@ post '/delete/view/:view_id' => [qw/user/] => sub {
     });
 };
 
-get '/resultview/:query_id/:history_id' => [qw/user title_sidebar urls/] => sub {
+get '/resultview/:query_id/:history_id' => [qw/title_sidebar urls/] => sub {
     my ($self, $c) = @_;
     my $query_id = $c->args->{query_id};
     my $history_id = $c->args->{history_id};
@@ -842,7 +815,6 @@ get '/resultview/:query_id/:history_id' => [qw/user title_sidebar urls/] => sub 
     foreach my $graph (@$graphs) {
         $header->[$graph->{value_field_num}] = $graph->{label};
     }
-    $self->mark($c->stash->{username}, $query_id);
     $c->render('resultview.tx', { query => $query, history => $history, resultid => $result->{resultid},
                                   header => $header, data => \@data });
 };
@@ -893,7 +865,7 @@ sub schedule_build {
     return [sort { $a->{sched_data}->{t} <=> $b->{sched_data}->{t} } @$schedule_list];
 }
 
-get '/schedules/:month' => [qw/user title_sidebar urls/] => sub {
+get '/schedules/:month' => [qw/title_sidebar urls/] => sub {
     my ($self, $c) = @_;
     $c->halt(500) unless $c->args->{month} =~ m!^20\d\d\d\d$!;
     my $target = Time::Piece->strptime($c->args->{month}, '%Y%m');
@@ -907,7 +879,7 @@ get '/schedules/:month' => [qw/user title_sidebar urls/] => sub {
         next_disp => $next_month->strftime('%Y/%m'),
     };
 
-    #'SELECT id,query_id,status,schedule,schedule_jp,created_at,created_by FROM schedules WHERE status=1 ORDER BY id'
+    #'SELECT id,query_id,status,schedule,schedule_jp,created_at FROM schedules WHERE status=1 ORDER BY id'
     # schedule: '0 10 * * *'
     my $schedules = schedule_build($self->data->valid_schedules);
     my $hhmm = sub { my ($m,$h) = split(/ /, shift); return sprintf('%02d%02d',$h,$m); };
@@ -919,7 +891,7 @@ get '/schedules/:month' => [qw/user title_sidebar urls/] => sub {
     @dummy_queries{ map { $_->{query_id} } @$schedules } = ();
     my $query_id_list = [keys %dummy_queries];
 
-    #SELECT id,service,status,query,created_at,created_by,modified_at,modified_by,description,date_field_num,date_format
+    #SELECT id,service,status,query,created_at,modified_at,description,date_field_num,date_format
     my $queries = $self->data->query_list($query_id_list);
     my %query_map;
     foreach my $query (@$queries) {

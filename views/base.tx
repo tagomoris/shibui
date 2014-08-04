@@ -55,7 +55,7 @@ span.sat {color:blue}
         <li class=""><a href="<: $c.req.uri_for('/query_builder') :>">クエリ作成ツール</a></li>
       </ul>
       <ul class="nav pull-right">
-        <li class="active"><a href="#"><: $c.stash['username'] :></a></li>
+        <li class="active">LINE</li>
       </ul>
     </div>
   </div>
@@ -83,21 +83,6 @@ span.sat {color:blue}
           <li class="<: $item.active ? "active" : "" :>">
             <a href="<: $c.req.uri_for('/'~$c.stash.sidebar.query.path~'/'~$item.service) :>">
               <i class="icon-pencil"></i><: $item.service :>
-            </a>
-          </li>
-          : }
-          : }
-          
-          : if $c.stash.sidebar.oneshot_users {
-          <li class="nav-header"><: $c.stash.sidebar.oneshot_users.name :></li>
-          : for $c.stash.sidebar.oneshot_users.items -> $item {
-          <li class="<: $item.active ? "active" : "" :>">
-            <a href="<: $c.req.uri_for('/query_builder/show/'~$item.id ) :>">
-              : if $item.status == 'waiting' {
-              <i class="icon-refresh"></i><: $item.started_at :> (<: $item.status :>)
-              : } else {
-              <i class="icon-file"></i><: $item.started_at :> (<: $item.status :>)
-              : }
             </a>
           </li>
           : }
