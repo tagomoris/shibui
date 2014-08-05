@@ -17,7 +17,7 @@
 : if (! $query.status) {
 <div style="color: red; font-weight: bold;">無効</div>
 : }
-<div style="float: right;"><: $query.modified_at :> by <: $query.modified_by :></div>
+<div style="float: right;"><: $query.modified_at :></div>
 </div>
 : } # for queries
 
