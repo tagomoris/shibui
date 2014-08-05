@@ -43,14 +43,6 @@ CREATE TABLE IF NOT EXISTS histories (
   KEY history_query_search (query_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
--- deleeeeeeeeeeeeeeet
-CREATE TABLE IF NOT EXISTS readers (
-  id         INT           NOT NULL PRIMARY KEY AUTO_INCREMENT,
-  query_id   INT           NOT NULL,
-  created_at TIMESTAMP     NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  KEY reader_query_search (query_id, created_at DESC)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8;
-
 CREATE TABLE IF NOT EXISTS views (
   id           INT           NOT NULL PRIMARY KEY AUTO_INCREMENT,
   service      VARCHAR(64)   NOT NULL,
