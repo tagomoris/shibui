@@ -35,9 +35,16 @@ perl -Iextlib/lib/perl5 -Ilib -MShib::ShibUI -MShib::ShibUI::GenerateCrontab \
      -e 'my $config = do $ARGV[0]; local $Shib::ShibUI::CONFIG = $config; Shib::ShibUI::GenerateCrontab->execute();' \
      $CONFIG >> $TMP_TARGET
 
+rcode=$?
+
 echo "# END OF AUTOGEN #" >> $TMP_TARGET
 
 sync; sync; sync
+
+if [ "$rcode" != "0" ]; then
+    echo "ERROR: failed to generate crontab schedule"
+    exit 1
+fi
 
 diff -q $TMP_TARGET $TARGET >/dev/null 2>&1
 if [ x"$?" = "x1" ] ; then
